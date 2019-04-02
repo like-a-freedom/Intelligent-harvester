@@ -28,6 +28,7 @@ import requests
 import unicodedata
 import configparser
 from IPy import IP
+from modules import dbmodel
 from modules import pdfConverter
 from collections import defaultdict
 from xlrd import open_workbook, sheet
@@ -571,6 +572,80 @@ class feedExporter():
         :param iocs: IOCs that will be stored
         """
         pass
+
+    def clickhouseExporter(self, iocs):
+        """
+        Export indicators collection to Click House datebase
+        :param host: Click House db DNS name or IP
+        :param db: Connection string to db
+        :param iocs: Collection of IoCs that will be written to the db
+        """
+        #TODO: get conf from method args
+        url = '10.2.5.230:8123'
+        name = 'default'
+        passw = ''
+        databaseName = 'harvester'
+
+        try:
+            #TODO: read CH conf from config
+            db = dbmodel.Database(
+                db=databaseName, 
+                db_url=url, 
+                username=name, 
+                password=passw, 
+                readonly=False, 
+                autocreate=True
+                )
+
+            #TODO: make an arg to the method to switch between write or append modes
+            db.drop_table(dbmodel.ThreatIntel)
+            db.create_table(dbmodel.ThreatIntel)
+
+        except Exception as e:
+            systemService.logEvent(
+                self,
+                message='Error while try to init Click House: {0}'
+                .format(e),
+            logLevel='ERROR'
+            )     
+
+        try:
+            startTime = datetime.now()
+            
+            #TODO: write IoCs to Click House
+
+            '''
+            db.insert(
+                [dbmodels.ThreatIntel(
+                    iocValue=,
+                    iocType=,
+                    providerName=,
+                    createdDate=
+                    )
+                ]
+            )
+            '''
+
+            endTime = datetime.now()
+            delta = endTime - startTime
+
+            systemService.logEvent(
+                self,
+                message='Total of {0} IoCs written to Click House in {1} sec {2} msec'
+                .format(
+                    iocs[1],
+                    delta.seconds,
+                    delta.microseconds,
+                    ),
+                logLevel='INFO'
+                )
+        except Exception as e:
+            systemService.logEvent(
+                self,
+                message='Error while try to write to Click House: {0}'
+                .format(e),
+            logLevel='ERROR'
+            )
 
 class systemService():
 

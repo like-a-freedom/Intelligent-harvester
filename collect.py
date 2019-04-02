@@ -96,6 +96,7 @@ if __name__ == "__main__":
 
     startTime = datetime.now()
 
+    #TODO: move config load to the intelligent_harverster library
     config = loadConfig(args.config)
 
     feedCollector = IH.feedCollector()
