@@ -42,7 +42,8 @@ class feedCollector():
         systemService.logEvent(
             self,
             message='*** Intelligent harvester started ***',
-            logLevel='INFO')
+            logLevel='INFO'
+            )
 
     def getFeed(self, feedPack):
         """
@@ -281,7 +282,7 @@ class feedProcessor():
             )
 
         #TODO: return ioc type
-        return ip_list + domain_list + md5_list + sha1_list + sha256_list + yara_list, totalParsed
+        return ip_list + domain_list + md5_list + sha1_list + sha256_list + yara_list, totalParsed, feedData[1]
 
     def batchFeedParse(self, feedPack, proc: int):
         """
@@ -520,19 +521,27 @@ class feedExporter():
             logLevel='INFO'
             )
 
-        db.execute("PRAGMA foreign_keys = ON")
-        db_cursor = db.cursor()
+        try:
+            db.execute("PRAGMA foreign_keys = ON")
+            db_cursor = db.cursor()
 
-        db_cursor.execute('''CREATE TABLE IF NOT EXISTS indicators 
-                (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    ioc_value TEXT NOT NULL,
-                    ioc_type TEXT,
-                    provider_name TEXT,
-                    created_date TEXT
+            db_cursor.execute('''CREATE TABLE IF NOT EXISTS indicators 
+                    (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        ioc_value TEXT NOT NULL,
+                        ioc_type TEXT,
+                        provider_name TEXT,
+                        created_date TEXT
+                    )
+                ''')
+            db.commit()
+
+        except Error as tableCreateError:
+            systemService.logEvent(
+                self,
+                message='Error while try to create table: ' + tableCreateError,
+                logLevel='ERROR'
                 )
-            ''')
-        db.commit()
 
         try:
             db.execute(
@@ -544,8 +553,8 @@ class feedExporter():
                     created_date
                     )
                 VALUES (?, ?, ?, ?)
-                ''', ("236236ferqg34tgq2rg4yrq", "hash", "sample-provider",
-                      datetime.now()))
+                ''', (str(iocs[0]), "dummy", str(iocs[2]), datetime.now())
+                )
         except sqlite3.IntegrityError as sqlIntegrityError:
             systemService.logEvent(
                 self,
@@ -575,11 +584,11 @@ class feedExporter():
 class systemService():
 
     def logEvent(self, message, logLevel):
-        '''
+        """
         Write meesages into log file
         :param message: message that will be written into log file
         :param logLevel: severity level of message (error, warn, info or debug)
-        '''
+        """
 
         logging.basicConfig(
             filename='harvester.log',

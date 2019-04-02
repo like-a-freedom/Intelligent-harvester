@@ -114,7 +114,9 @@ if __name__ == "__main__":
     parsedData = feedProcessor.batchFeedParse(feedPack, args.processes)
 
     # Exporting IoCs to the file specified
+    print(parsedData)
     feedExporter.txtExporter('indicators.txt', parsedData)
+    feedExporter.sqliteExporter('iocs.db', parsedData)
 
     # Log results
     endTime = datetime.now()
