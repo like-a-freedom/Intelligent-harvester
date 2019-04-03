@@ -497,11 +497,8 @@ class feedExporter():
 
                 totalIOCs += list[1]
                 providersCount = providersCount + 1
-                #print(list[2])
                 
                 for element in list[0]:
-                    #print(str(element) + ' # ' + str(i))
-                    #i = i + 1
                     file.write("%s\n" % element.decode('utf-8'))
 
         systemService.logEvent(
@@ -583,7 +580,7 @@ class feedExporter():
             providersCount = providersCount +1
 
             for element in list[0]:
-                #print('IoC {0} provider {1}'.format(element.decode('utf-8'), list[2]))
+                print('IoC {0} provider {1}'.format(element.decode('utf-8'), list[2]))
                 
                 try:
                         db.execute(
