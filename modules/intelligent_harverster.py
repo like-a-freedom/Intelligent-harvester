@@ -226,7 +226,6 @@ class feedProcessor():
                 pass
             else:
                 url_list.append(ioc)
-                isRecongnized = True
 
         ipaddr = ipPattern.findall(feed)
         for ioc in ipaddr:
