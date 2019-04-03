@@ -81,7 +81,7 @@ class feedCollector():
                 self,
                 message='Feed `{0}` can not downloaded. Error {1}'
                 .format(
-                    feedName,
+                    feedPack[1],
                     connErr,
                     ),
                 logLevel='INFO'
@@ -133,6 +133,7 @@ class feedCollector():
 
         return feedData
 
+    '''
     def mapSource(self, url, key):
         """
         Formats and appends IP addresses to the belonging list
@@ -149,7 +150,9 @@ class feedCollector():
                 if ips:
                     for ip in ips:
                         d[key].append(ip)
+    '''
 
+    '''
     def getOTX(self, days):
         """
         Gets the information from Alienvault OTX
@@ -170,7 +173,7 @@ class feedCollector():
                 t = pulse['type']
                 if t in mappings:
                     d[mappings[t]].append(pulse['indicator'])
-
+        '''
 
 class feedProcessor():
     """
@@ -193,7 +196,8 @@ class feedProcessor():
         """
 
         ### Setup patterns for extraction
-        ipPattern = self.utils.guessIocType('ip')
+        urlPattern = self.utils.guessIocType('URL')
+        ipPattern = self.utils.guessIocType('ipv4')
         hostPattern = self.utils.guessIocType('domain')
         md5Pattern = self.utils.guessIocType('md5')
         sha1Pattern = self.utils.guessIocType('sha1')
@@ -202,6 +206,7 @@ class feedProcessor():
         commentPattern = self.utils.guessIocType('comment')
 
         ### Declare temp list vars to store IOCs
+        url_list = []
         ip_list = []
         domain_list = []
         md5_list = []
@@ -211,9 +216,18 @@ class feedProcessor():
 
         startTime = datetime.now()
 
+        ### Remove all `#` comments from feed
         feed = self.removeComments(feedData[0])
 
         ### Iterate over lists of matched IOCs
+        urls = urlPattern.findall(feed)
+        for ioc in urls:
+            if ioc in url_list:
+                pass
+            else:
+                url_list.append(ioc)
+                isRecongnized = True
+
         ipaddr = ipPattern.findall(feed)
         for ioc in ipaddr:
             # Remove brackets if defanged
@@ -266,7 +280,18 @@ class feedProcessor():
         delta = endTime - startTime
 
         totalParsed = len(ip_list) + len(domain_list) + len(md5_list) + \
-            len(sha1_list) + len(sha256_list) + len(yara_list)
+            len(sha1_list) + len(sha256_list) + len(yara_list) + len(url_list)
+
+        #print(totalParsed)
+        print('Feed: ', feedData[1])
+        print('IP: ', len(ip_list))
+        print('Domain: ', len(domain_list))
+        print('MD5:', len(md5_list))
+        print('SHA1: ', len(sha1_list))
+        print('SHA2: ', len(sha256_list))
+        print('YARA: ', len(yara_list))
+        print('URL: ', len(url_list))
+        print('\n')
 
         systemService.logEvent(
             self,
@@ -282,7 +307,7 @@ class feedProcessor():
             )
 
         #TODO: return ioc type
-        return ip_list + domain_list + md5_list + sha1_list + sha256_list + yara_list, totalParsed, feedData[1]
+        return url_list + ip_list + domain_list + md5_list + sha1_list + sha256_list + yara_list, totalParsed, feedData[1]
 
     def batchFeedParse(self, feedPack, proc: int):
         """
@@ -311,7 +336,7 @@ class feedProcessor():
 
         for item in parsedData:
             totalParsed = totalParsed + item[1]
-        
+
         # Log results
         systemService.logEvent(
             self,
@@ -344,7 +369,8 @@ class feedProcessor():
 
         def guessIocType(iocType):
             iocPatterns = {
-                "ip": b"((?:(?:[12]\d?\d?|[1-9]\d|[1-9])(?:\[\.\]|\.)){3}(?:[12]\d?\d?|[\d+]{1,2}))",
+                #"ipv4": b"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
+                "ipv4": b"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$",
                 "domain": b"([A-Za-z0-9]+(?:[\-|\.][A-Za-z0-9]+)*(?:\[\.\]|\.)(?:com|net|edu|ru|org|de|uk|jp|br|pl|info|fr|it|cn|in|su|pw|biz|co|eu|nl|kr|me))",
                 "md5": b"\W([A-Fa-f0-9]{32})(?:\W|$)",
                 "sha1": b"\W([A-Fa-f0-9]{40})(?:\W|$)",
@@ -461,23 +487,29 @@ class feedExporter():
         :param iocs: IOCs that will be stored
         """
 
-        total: int = 0
+        totalIOCs: int = 0
         providersCount: int = 0
 
         #filename.write("".join("{}\t[{}]\n".format(t, name) for t in dict[key]))
-
+        i: int = 0
         with open(filename, 'w') as file:
+
             for list in iocs:
+
+                totalIOCs += list[1]
                 providersCount = providersCount + 1
-                total += len(list[0])
+                #print(list[2])
+                
                 for element in list[0]:
+                    #print(str(element) + ' # ' + str(i))
+                    #i = i + 1
                     file.write("%s\n" % element.decode('utf-8'))
 
         systemService.logEvent(
             self,
             message='{0} IOCs from {1} providers successfully exported to text file {2}'
             .format(
-                total,
+                totalIOCs,
                 providersCount,
                 filename
             ),
@@ -500,12 +532,15 @@ class feedExporter():
             data = [["Name", "Score"], [name, score]]
             writer.writerows(data)
 
-    def sqliteExporter(self, filename, iocs):
+    def sqliteExporter(self, filename, iocs: list):
         """
-        TODO: Make SQLite exporter
         :param filename: file of sqlite that will be exported to
         :param iocs: IOCs that will be stored in DB
         """
+
+        totalIOCs: int = 0
+        providersCount: int = 0
+
         try:
             db = sqlite3.connect(filename)
         except Error as dbErr:
@@ -543,31 +578,45 @@ class feedExporter():
                 logLevel='ERROR'
                 )
 
-        try:
-            db.execute(
-                '''
-                INSERT OR REPLACE INTO indicators (
-                    ioc_value,
-                    ioc_type,
-                    provider_name,
-                    created_date
-                    )
-                VALUES (?, ?, ?, ?)
-                ''', (str(iocs[0]), "dummy", str(iocs[2]), datetime.now())
-                )
-        except sqlite3.IntegrityError as sqlIntegrityError:
-            systemService.logEvent(
-                self,
-                message='SQLite error: {0}'
-                .format(
-                    sqlIntegrityError.args[0]),  # column name is not unique
-                    logLevel='ERROR'
-                )
-        db.commit()
+        for list in iocs:
 
+            totalIOCs += list[1]
+            providersCount = providersCount +1
+
+            for element in list[0]:
+                #print('IoC {0} provider {1}'.format(element.decode('utf-8'), list[2]))
+                
+                try:
+                        db.execute(
+                            '''
+                            INSERT OR REPLACE INTO indicators (
+                                ioc_value,
+                                ioc_type,
+                                provider_name,
+                                created_date
+                                )
+                            VALUES (?, ?, ?, ?)
+                            ''', (element.decode('utf-8'), "dummy", list[2], datetime.now())
+                            )
+                except sqlite3.IntegrityError as sqlIntegrityError:
+                    systemService.logEvent(
+                        self,
+                        message='SQLite error: {0}'
+                        .format(
+                            sqlIntegrityError.args[0]),  # column name is not unique
+                            logLevel='ERROR'
+                        )
+
+                db.commit()
+                    
         systemService.logEvent(
             self,
-            message='Data has successfully written into SQLite database',
+            message='{0} IoCs form {1} providers successfully exported to SQLite database {2}'
+            .format(
+                totalIOCs,
+                providersCount,
+                filename
+            ),
             logLevel='INFO')
 
         db.close()
