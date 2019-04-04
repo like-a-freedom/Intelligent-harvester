@@ -73,8 +73,9 @@ class feedCollector():
                     ),
                 logLevel='INFO'
                 )
-            
-            return feed.text.splitlines(), feedPack[1], feedSize
+            pattern = re.compile(r";|,|\n")
+
+            return re.split('; |;|, |,|\*|\n|\t', feed.text), feedPack[1], feedSize
         
         except ConnectionError as connErr:  # except (ConnectTimeout, HTTPError, ReadTimeout, Timeout, ConnectionError):
             systemService.logEvent(
@@ -208,7 +209,7 @@ class feedProcessor():
         ### Setup patterns for extraction
         urlPattern = self.utils.guessIocType(self, 'URL')
         ipPattern = self.utils.guessIocType(self, 'ipv4')
-        hostPattern = self.utils.guessIocType(self, 'domain')
+        domainPattern = self.utils.guessIocType(self, 'domain')
         md5Pattern = self.utils.guessIocType(self, 'md5')
         sha1Pattern = self.utils.guessIocType(self, 'sha1')
         sha256Pattern = self.utils.guessIocType(self, 'sha256')
@@ -218,7 +219,6 @@ class feedProcessor():
         url_list = []
         ip_list = []
         domain_list = []
-        host_list = []
         md5_list = []
         sha1_list = []
         sha256_list = []
@@ -229,18 +229,31 @@ class feedProcessor():
         ### Remove all `#` comments from feed
         feed = self.removeComments(feedData[0])
         
+        '''for item in feed:
+            print(item)'''
 
         ### Iterate over lists and match IOCs
         url_list = list(filter(urlPattern.match, feed))
         ip_list = list(filter(ipPattern.match, feed))
-        host_list = list(filter(hostPattern.match, feed))
+        domain_list = list(filter(domainPattern.match, feed))
         md5_list = list(filter(md5Pattern.match, feed))
         sha1_list = list(filter(sha1Pattern.match, feed))
         sha256_list = list(filter(sha256Pattern.match, feed))
         yara_list = list(filter(yaraPattern.match, feed))
 
+        #print(totalParsed)
+        print('Feed: ', feedData[1])
+        print('IP: ', len(ip_list))
+        print('Domain: ', len(domain_list))
+        print('MD5:', len(md5_list))
+        print('SHA1: ', len(sha1_list))
+        print('SHA2: ', len(sha256_list))
+        print('YARA: ', len(yara_list))
+        print('URL: ', len(url_list))
+        print('\n')
+
         """
-        Defrang
+        Defang
         for ioc in list:
             # Remove brackets if defanged
             i = re.sub(b'\[\.\]', b'.', ioc)
@@ -330,8 +343,9 @@ class feedProcessor():
             iocPatterns = {
                 #"ipv4": b"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
                 "ipv4": "^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$",
-                #"domain": b"([A-Za-z0-9]+(?:[\-|\.][A-Za-z0-9]+)*(?:\[\.\]|\.)(?:com|net|edu|ru|org|de|uk|jp|br|pl|info|fr|it|cn|in|su|pw|biz|co|eu|nl|kr|me))",
-                "domain": "\b((?=[a-z0-9-]{1,63}\.)(xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,63}\b",
+                #"domain": "([A-Za-z0-9]+(?:[\-|\.][A-Za-z0-9]+)*(?:\[\.\]|\.)(?:com|net|edu|ru|org|de|uk|jp|br|pl|info|fr|it|cn|in|su|pw|biz|co|eu|nl|kr|me))$",
+                #"domain": "^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\.[a-zA-Z]{2,11}?$",
+                "domain": "^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}",
                 "md5": "\W([A-Fa-f0-9]{32})(?:\W|$)",
                 "sha1": "\W([A-Fa-f0-9]{40})(?:\W|$)",
                 "sha256": "\W([A-Fa-f0-9]{64})(?:\W|$)",
