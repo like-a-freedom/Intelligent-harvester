@@ -74,7 +74,7 @@ class feedCollector():
                 logLevel='INFO'
                 )
             
-            return bytes(feed.text, 'utf-8'), feedPack[1], feedSize
+            return feed.text.splitlines(), feedPack[1], feedSize
         
         except ConnectionError as connErr:  # except (ConnectTimeout, HTTPError, ReadTimeout, Timeout, ConnectionError):
             systemService.logEvent(
@@ -180,13 +180,23 @@ class feedProcessor():
     Feed processing: parsing
     """
 
-    def removeComments(self, feedData):
+    def removeComments(self, feedData: list):
         """
         Removes all comments from text feed
-        :param feedData: Feed data, bytes
+        :param feedData: Feed data, list
         """
-        feed = feedData.decode('utf-8').split('\n')
-        return bytes(str([line for line in feed if not line.startswith('#')]), encoding='utf8')
+        
+        #TODO: remove obsolete code
+        #feed = feedData.decode('utf-8').split('\n')
+        #return (str([item for item in feedData if not item.startswith('#')]))
+        
+        clearedFeed = []
+
+        for element in feedData:
+            if not str(element).startswith('#'):
+                clearedFeed.append(element)
+
+        return clearedFeed
 
     def parseFeed(self, feedData):
         """
@@ -196,19 +206,19 @@ class feedProcessor():
         """
 
         ### Setup patterns for extraction
-        urlPattern = self.utils.guessIocType('URL')
-        ipPattern = self.utils.guessIocType('ipv4')
-        hostPattern = self.utils.guessIocType('domain')
-        md5Pattern = self.utils.guessIocType('md5')
-        sha1Pattern = self.utils.guessIocType('sha1')
-        sha256Pattern = self.utils.guessIocType('sha256')
-        yaraPattern = self.utils.guessIocType('yara')
-        commentPattern = self.utils.guessIocType('comment')
+        urlPattern = self.utils.guessIocType(self, 'URL')
+        ipPattern = self.utils.guessIocType(self, 'ipv4')
+        hostPattern = self.utils.guessIocType(self, 'domain')
+        md5Pattern = self.utils.guessIocType(self, 'md5')
+        sha1Pattern = self.utils.guessIocType(self, 'sha1')
+        sha256Pattern = self.utils.guessIocType(self, 'sha256')
+        yaraPattern = self.utils.guessIocType(self, 'yara')
 
         ### Declare temp list vars to store IOCs
         url_list = []
         ip_list = []
         domain_list = []
+        host_list = []
         md5_list = []
         sha1_list = []
         sha256_list = []
@@ -218,79 +228,29 @@ class feedProcessor():
 
         ### Remove all `#` comments from feed
         feed = self.removeComments(feedData[0])
+        
 
-        ### Iterate over lists of matched IOCs
-        urls = urlPattern.findall(feed)
-        for ioc in urls:
-            if ioc in url_list:
-                pass
-            else:
-                url_list.append(ioc)
+        ### Iterate over lists and match IOCs
+        url_list = list(filter(urlPattern.match, feed))
+        ip_list = list(filter(ipPattern.match, feed))
+        host_list = list(filter(hostPattern.match, feed))
+        md5_list = list(filter(md5Pattern.match, feed))
+        sha1_list = list(filter(sha1Pattern.match, feed))
+        sha256_list = list(filter(sha256Pattern.match, feed))
+        yara_list = list(filter(yaraPattern.match, feed))
 
-        ipaddr = ipPattern.findall(feed)
-        for ioc in ipaddr:
+        """
+        Defrang
+        for ioc in list:
             # Remove brackets if defanged
             i = re.sub(b'\[\.\]', b'.', ioc)
-
-            if ioc in ip_list:
-                pass
-            else:
-                ip_list.append(ioc)
-
-        domains = hostPattern.findall(feed)
-        for ioc in domains:
-            # Remove brackets if defanged
-            ioc = re.sub(b'\[\.\]', b'.', ioc)
-
-            if ioc in domain_list:
-                pass
-            else:
-                domain_list.append(ioc)
-
-        md5Hash = md5Pattern.findall(feed)
-        for ioc in md5Hash:
-            if ioc in md5_list:
-                pass
-            else:
-                md5_list.append(ioc)
-
-        sha1Hash = sha1Pattern.findall(feed)
-        for ioc in sha1Hash:
-            if ioc in sha1_list:
-                pass
-            else:
-                sha1_list.append(ioc)
-
-        sha256Hash = sha256Pattern.findall(feed)
-        for ioc in sha256Hash:
-            if ioc in sha1_list:
-                pass
-            else:
-                sha256_list.append(ioc)
-
-        yaraRules = yaraPattern.findall(feed)
-        for ioc in yaraRules:
-            if ioc in yara_list:
-                pass
-            else:
-                yara_list.append(ioc)
+        """
 
         endTime = datetime.now()
         delta = endTime - startTime
 
         totalParsed = len(ip_list) + len(domain_list) + len(md5_list) + \
             len(sha1_list) + len(sha256_list) + len(yara_list) + len(url_list)
-
-        #print(totalParsed)
-        print('Feed: ', feedData[1])
-        print('IP: ', len(ip_list))
-        print('Domain: ', len(domain_list))
-        print('MD5:', len(md5_list))
-        print('SHA1: ', len(sha1_list))
-        print('SHA2: ', len(sha256_list))
-        print('YARA: ', len(yara_list))
-        print('URL: ', len(url_list))
-        print('\n')
 
         systemService.logEvent(
             self,
@@ -366,18 +326,20 @@ class feedProcessor():
             ip = re.findall(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', indicator)
             return ip
 
-        def guessIocType(iocType):
+        def guessIocType(self, iocType):
             iocPatterns = {
                 #"ipv4": b"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
-                "ipv4": b"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$",
-                "domain": b"([A-Za-z0-9]+(?:[\-|\.][A-Za-z0-9]+)*(?:\[\.\]|\.)(?:com|net|edu|ru|org|de|uk|jp|br|pl|info|fr|it|cn|in|su|pw|biz|co|eu|nl|kr|me))",
-                "md5": b"\W([A-Fa-f0-9]{32})(?:\W|$)",
-                "sha1": b"\W([A-Fa-f0-9]{40})(?:\W|$)",
-                "sha256": b"\W([A-Fa-f0-9]{64})(?:\W|$)",
-                "email": b"[a-zA-Z0-9_]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?!([a-zA-Z0-9]*\.[a-zA-Z0-9]*\.[a-zA-Z0-9]*\.))(?:[A-Za-z0-9](?:[a-zA-Z0-9-]*[A-Za-z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?",
-                "URL": b"((?:http|ftp|https)\:\/\/(?:[\w+?\.\w+])+[a-zA-Z0-9\~\!\@\#\$\%\^\&\*\(\)_\-\=\+\\\/\?\.\:\;]+)",
-                "yara": b"(rule\s[\w\W]{,30}\{[\w\W\s]*\})",
-                "comment": b"(#.*$)"
+                "ipv4": "^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$",
+                #"domain": b"([A-Za-z0-9]+(?:[\-|\.][A-Za-z0-9]+)*(?:\[\.\]|\.)(?:com|net|edu|ru|org|de|uk|jp|br|pl|info|fr|it|cn|in|su|pw|biz|co|eu|nl|kr|me))",
+                "domain": "\b((?=[a-z0-9-]{1,63}\.)(xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,63}\b",
+                "md5": "\W([A-Fa-f0-9]{32})(?:\W|$)",
+                "sha1": "\W([A-Fa-f0-9]{40})(?:\W|$)",
+                "sha256": "\W([A-Fa-f0-9]{64})(?:\W|$)",
+                "email": "[a-zA-Z0-9_]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?!([a-zA-Z0-9]*\.[a-zA-Z0-9]*\.[a-zA-Z0-9]*\.))(?:[A-Za-z0-9](?:[a-zA-Z0-9-]*[A-Za-z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?",
+                "URL": "((?:http|ftp|https)\:\/\/(?:[\w+?\.\w+])+[a-zA-Z0-9\~\!\@\#\$\%\^\&\*\(\)_\-\=\+\\\/\?\.\:\;]+)",
+                "yara": "(rule\s[\w\W]{,30}\{[\w\W\s]*\})",
+                "comment": "(#.*$)"
+                # https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
             }
 
             try:
@@ -436,7 +398,7 @@ class feedProcessor():
 
             return domain.replace("[.]", ".")
 
-        def extractPdfOrExcel(filename):
+        def extractPdfOrExcel(self, filename):
             """
             Extract IoCs from PDF, xls or xlsx file
             :param filename: filename to be extracted from
@@ -499,7 +461,7 @@ class feedExporter():
                 providersCount = providersCount + 1
                 
                 for element in list[0]:
-                    file.write("%s\n" % element.decode('utf-8'))
+                    file.write("%s\n" % element)
 
         systemService.logEvent(
             self,
@@ -580,7 +542,7 @@ class feedExporter():
             providersCount = providersCount +1
 
             for element in list[0]:
-                print('IoC {0} provider {1}'.format(element.decode('utf-8'), list[2]))
+                print('IoC {0} provider {1}'.format(element, list[2]))
                 
                 try:
                         db.execute(
@@ -592,7 +554,7 @@ class feedExporter():
                                 created_date
                                 )
                             VALUES (?, ?, ?, ?)
-                            ''', (element.decode('utf-8'), "dummy", list[2], datetime.now())
+                            ''', (element, "dummy", list[2], datetime.now())
                             )
                 except sqlite3.IntegrityError as sqlIntegrityError:
                     systemService.logEvent(
