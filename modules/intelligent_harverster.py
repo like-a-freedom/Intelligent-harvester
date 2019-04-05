@@ -12,6 +12,7 @@
 #   https://github.com/opensourcesec/Forager/
 #   https://github.com/certtools/intelmq
 #   https://github.com/mlsecproject/combine
+#   https://github.com/InQuest/python-iocextract
 #
 #   Demonize python: https://itrus.su/2016/04/12/python-скрипт-как-демонслужба-systemd/
 #
@@ -57,27 +58,8 @@ class feedCollector():
             startTime = datetime.now()
 
             feed = requests.get(feedPack[0])
-            feedSize = round(len(feed.content) / 1024, 2)
 
-            endTime = datetime.now()
-            delta = endTime - startTime
-
-            systemService.logEvent(
-                self,
-                message='Feed `{0}` of {1} Kbytes downloaded in {2} sec {3} msec'
-                .format(
-                    feedPack[1],
-                    feedSize, 
-                    delta.seconds,
-                    delta.microseconds,
-                    ),
-                logLevel='INFO'
-                )
-            pattern = re.compile(r";|,|\n")
-
-            return re.split('; |;|, |,|\*|\n|\t', feed.text), feedPack[1], feedSize
-        
-        except ConnectionError as connErr:  # except (ConnectTimeout, HTTPError, ReadTimeout, Timeout, ConnectionError):
+        except requests.exceptions.ConnectionError as connErr:  # except (ConnectTimeout, HTTPError, ReadTimeout, Timeout, ConnectionError):
             systemService.logEvent(
                 self,
                 message='Feed `{0}` can not downloaded. Error {1}'
@@ -85,8 +67,54 @@ class feedCollector():
                     feedPack[1],
                     connErr,
                     ),
-                logLevel='INFO'
+                logLevel='ERROR'
                 )
+            sys.exit(1)
+        
+        except requests.exceptions.HTTPError as httpErr:
+            systemService.logEvent(
+                self,
+                message='Feed `{0}` can not downloaded. Error {1}'
+                .format(
+                    feedPack[1],
+                    httpErr,
+                    ),
+                logLevel='ERROR'
+                )
+            sys.exit(1)
+
+        except requests.exceptions.SSLError as sslErr:
+            systemService.logEvent(
+                self,
+                message='Feed `{0}` can not downloaded. Error {1}'
+                .format(
+                    feedPack[1],
+                    sslErr,
+                    ),
+                logLevel='ERROR'
+                )
+            sys.exit(1)
+
+        feedSize = round(len(feed.content) / 1024, 2)
+
+        endTime = datetime.now()
+        delta = endTime - startTime
+
+        systemService.logEvent(
+            self,
+            message='Feed `{0}` of {1} Kbytes downloaded in {2} sec {3} msec'
+            .format(
+                feedPack[1],
+                feedSize, 
+                delta.seconds,
+                delta.microseconds,
+                ),
+            logLevel='INFO'
+            )
+
+        #TODO: make prerocessing method instead of process in method return
+
+        return re.split('; |;|, |,|\n|\r|\r\n|\t', feed.text.replace("\r","")), feedPack[1], feedSize
 
     def batchFeedDownload(self, feedPack, proc: int):
         """
@@ -206,22 +234,36 @@ class feedProcessor():
         :param feedName: Name of TI feed, just for logging
         """
 
+        #TODO: try to use https://github.com/InQuest/python-iocextract instead of own method
+
         ### Setup patterns for extraction
         urlPattern = self.utils.guessIocType(self, 'URL')
         ipPattern = self.utils.guessIocType(self, 'ipv4')
         domainPattern = self.utils.guessIocType(self, 'domain')
+        emailPattern = self.utils.guessIocType(self, 'email')
+        regkeyPattern = self.utils.guessIocType(self, 'regkey')
         md5Pattern = self.utils.guessIocType(self, 'md5')
         sha1Pattern = self.utils.guessIocType(self, 'sha1')
         sha256Pattern = self.utils.guessIocType(self, 'sha256')
+        sha512Pattern = self.utils.guessIocType(self, 'sha512')
+        filenamePattern = self.utils.guessIocType(self, 'filename')
+        filepathPattern = self.utils.guessIocType(self, 'filepath')
+        cvePattern = self.utils.guessIocType(self, 'cve')
         yaraPattern = self.utils.guessIocType(self, 'yara')
 
         ### Declare temp list vars to store IOCs
         url_list = []
         ip_list = []
         domain_list = []
+        email_list = []
+        regkey_list = []
         md5_list = []
         sha1_list = []
         sha256_list = []
+        sha512_list = []
+        filename_list = []
+        filepath_list = []
+        cve_list = []
         yara_list = []
 
         startTime = datetime.now()
@@ -236,21 +278,16 @@ class feedProcessor():
         url_list = list(filter(urlPattern.match, feed))
         ip_list = list(filter(ipPattern.match, feed))
         domain_list = list(filter(domainPattern.match, feed))
+        email_list = list(filter(emailPattern.match, feed))
+        regkey_list = list(filter(regkeyPattern.match, feed))
         md5_list = list(filter(md5Pattern.match, feed))
         sha1_list = list(filter(sha1Pattern.match, feed))
         sha256_list = list(filter(sha256Pattern.match, feed))
+        sha512_list = list(filter(sha512Pattern.match, feed))
+        filename_list = list(filter(filenamePattern.match, feed))
+        filepath_list = list(filter(filepathPattern.match, feed))
+        cve_list = list(filter(cvePattern.match, feed))
         yara_list = list(filter(yaraPattern.match, feed))
-
-        #print(totalParsed)
-        print('Feed: ', feedData[1])
-        print('IP: ', len(ip_list))
-        print('Domain: ', len(domain_list))
-        print('MD5:', len(md5_list))
-        print('SHA1: ', len(sha1_list))
-        print('SHA2: ', len(sha256_list))
-        print('YARA: ', len(yara_list))
-        print('URL: ', len(url_list))
-        print('\n')
 
         """
         Defang
@@ -262,8 +299,31 @@ class feedProcessor():
         endTime = datetime.now()
         delta = endTime - startTime
 
-        totalParsed = len(ip_list) + len(domain_list) + len(md5_list) + \
-            len(sha1_list) + len(sha256_list) + len(yara_list) + len(url_list)
+        totalParsed = len(ip_list) + len(url_list) +len(domain_list) + \
+            len(email_list) + len(regkey_list) + \
+            len(md5_list) + len(sha1_list) + len(sha256_list) + len(sha512_list) + \
+            len(filename_list) + len(filepath_list) + len(cve_list) + \
+            len(yara_list)
+
+        """
+        # Just for debug
+        print('\nFeed: ', feedData[1])
+        print('IP: ', len(ip_list))
+        print('Domain: ', len(domain_list))
+        print('URL: ', len(url_list))
+        print('Emails: ', len(email_list))
+        print('Reg keys: ', len(regkey_list))
+        print('MD5:', len(md5_list))
+        print('SHA1: ', len(sha1_list))
+        print('SHA256: ', len(sha256_list))
+        print('SHA512: ', len(sha512_list))
+        print('Filenames: ', len(filename_list))
+        print('Filepaths: ', len(filepath_list))
+        print('CVEs: ', len(cve_list))
+        print('YARA: ', len(yara_list))
+        print('Total IoCs: ', totalParsed)
+        print('\n')
+        """
 
         systemService.logEvent(
             self,
@@ -279,7 +339,12 @@ class feedProcessor():
             )
 
         #TODO: return ioc type
-        return url_list + ip_list + domain_list + md5_list + sha1_list + sha256_list + yara_list, totalParsed, feedData[1]
+        return \
+            ip_list + url_list + domain_list + email_list + regkey_list + \
+            md5_list + sha1_list + sha256_list + sha512_list + filename_list + \
+            filepath_list + cve_list + yara_list, \
+            totalParsed, \
+            feedData[1]
 
     def batchFeedParse(self, feedPack, proc: int):
         """
@@ -341,19 +406,22 @@ class feedProcessor():
 
         def guessIocType(self, iocType):
             iocPatterns = {
-                #"ipv4": b"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
-                "ipv4": "^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$",
-                #"domain": "([A-Za-z0-9]+(?:[\-|\.][A-Za-z0-9]+)*(?:\[\.\]|\.)(?:com|net|edu|ru|org|de|uk|jp|br|pl|info|fr|it|cn|in|su|pw|biz|co|eu|nl|kr|me))$",
-                #"domain": "^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\.[a-zA-Z]{2,11}?$",
-                "domain": "^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}",
-                "md5": "\W([A-Fa-f0-9]{32})(?:\W|$)",
-                "sha1": "\W([A-Fa-f0-9]{40})(?:\W|$)",
-                "sha256": "\W([A-Fa-f0-9]{64})(?:\W|$)",
-                "email": "[a-zA-Z0-9_]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?!([a-zA-Z0-9]*\.[a-zA-Z0-9]*\.[a-zA-Z0-9]*\.))(?:[A-Za-z0-9](?:[a-zA-Z0-9-]*[A-Za-z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?",
-                "URL": "((?:http|ftp|https)\:\/\/(?:[\w+?\.\w+])+[a-zA-Z0-9\~\!\@\#\$\%\^\&\*\(\)_\-\=\+\\\/\?\.\:\;]+)",
-                "yara": "(rule\s[\w\W]{,30}\{[\w\W\s]*\})",
-                "comment": "(#.*$)"
-                # https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
+                "ipv4": r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$",
+                "domain": r"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}",
+                "md5": r"\b([a-f0-9]{32}|[A-F0-9]{32})\b",
+                "sha1": r"\b([0-9a-f]{40}|[0-9A-F]{40})\b",
+                "sha256": r"\b([a-f0-9]{64}|[A-F0-9]{64})\b",
+                "sha512": r"(?:[^a-fA-F\d]|\b)([a-fA-F\d]{128})(?:[^a-fA-F\d]|\b)",
+                "email": r"[a-zA-Z0-9_]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?!([a-zA-Z0-9]*\.[a-zA-Z0-9]*\.[a-zA-Z0-9]*\.))(?:[A-Za-z0-9](?:[a-zA-Z0-9-]*[A-Za-z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?",
+                "URL": r"((?:http|ftp|https)\:\/\/(?:[\w+?\.\w+])+[a-zA-Z0-9\~\!\@\#\$\%\^\&\*\(\)_\-\=\+\\\/\?\.\:\;]+)",
+                "yara": r"(rule\s[\w\W]{,30}\{[\w\W\s]*\})",
+                "regkey": r"\b((HKLM|HKCU|HKEY_LOCAL_MACHINE|HKEY_CURRENT_USER)\\[\\A-Za-z0-9-_]+)\b",
+                "filename": r"\b([A-Za-z0-9-_\.]+\.(exe|dll|bat|sys|htm|html|js|jar|jpg|png|vb|scr|pif|chm|zip|rar|cab|pdf|doc|docx|ppt|pptx|xls|xlsx|swf|gif))\b",
+                "filepath": r"\b[A-Z]:\\[A-Za-z0-9-_\.\\]+\b",
+                "cve": r"CVE-\d{4}-\d{4,7}",
+                "email": r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+                "comment": r"(#.*$)",
+                "comment_v2": r"^([^#].*)?^\s*"
             }
 
             try:
@@ -467,7 +535,7 @@ class feedExporter():
 
         #filename.write("".join("{}\t[{}]\n".format(t, name) for t in dict[key]))
         i: int = 0
-        with open(filename, 'w') as file:
+        with open(filename, 'w', errors="ignore") as file:
 
             for list in iocs:
 
@@ -486,7 +554,7 @@ class feedExporter():
                 filename
             ),
             logLevel='INFO'
-            )
+        )
 
         file.close()
 
