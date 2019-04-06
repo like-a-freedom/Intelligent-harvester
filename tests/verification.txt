@@ -140,5 +140,3 @@ john-doe@example.com
 "2016-05-25 12:00:47","Distribution Site","Locky","alintagranito.com","http://alintagranito.com/fOA8Bl.exe","offline","GODADDY.COM, LLC","51.15.144.74","12876","FR"
 "2016-05-25 12:00:43","Distribution Site","Locky","osdc.eu","http://osdc.eu/gct5TH.exe","offline","GANDI","185.189.40.55","207162","GB"
 "2016-05-25 12:00:40","Distribution Site","Locky","kitchen38.com","http://kitchen38.com/HYPETS.exe","offline","SAFENAMES LTD","204.11.56.48","40034","VG"
-
-# Yara
