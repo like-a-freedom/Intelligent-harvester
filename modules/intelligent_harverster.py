@@ -581,6 +581,7 @@ class feedExporter():
         totalIOCs: int = 0
         providersCount: int = 0
 
+        # Let's to to connect to the specified database
         try:
             db = sqlite3.connect(filename)
         except Error as dbErr:
@@ -590,14 +591,16 @@ class feedExporter():
                 logLevel='ERROR'
                 )
 
+        # Log that SQLite file found and loaded
         systemService.logEvent(
             self,
             message='SQLite db named {0} loaded successfully'.format(filename),
             logLevel='INFO'
             )
-
+        
+        # Create table in the database
         try:
-            db.execute("PRAGMA foreign_keys = ON")
+            #db.execute("PRAGMA foreign_keys = ON")
             db_cursor = db.cursor()
 
             db_cursor.execute('''CREATE TABLE IF NOT EXISTS indicators 
@@ -611,20 +614,25 @@ class feedExporter():
                 ''')
             db.commit()
 
+        # Catch error if there is integrity error
         except Error as tableCreateError:
             systemService.logEvent(
                 self,
                 message='Error while try to create table: ' + tableCreateError,
                 logLevel='ERROR'
                 )
+            db.rollback()
+            os.sys.exit(1)
 
         for list in iocs:
 
             totalIOCs += list[1]
             providersCount = providersCount +1
 
+            # Iterate over iocs array and cook SQL INSERTS
             for element in list[0]:
-                print('IoC {0} provider {1}'.format(element, list[2]))
+                # Just for debug
+                # print('IoC {0} provider {1}'.format(element, list[2]))
                 
                 try:
                         db.execute(
@@ -638,6 +646,7 @@ class feedExporter():
                             VALUES (?, ?, ?, ?)
                             ''', (element, "dummy", list[2], datetime.now())
                             )
+
                 except sqlite3.IntegrityError as sqlIntegrityError:
                     systemService.logEvent(
                         self,
@@ -646,9 +655,12 @@ class feedExporter():
                             sqlIntegrityError.args[0]),  # column name is not unique
                             logLevel='ERROR'
                         )
+                    db.rollback()
+                    os.sys.exit(1)
 
-                db.commit()
-                    
+            db.commit()
+
+        # Log if all is okay                    
         systemService.logEvent(
             self,
             message='{0} IoCs form {1} providers successfully exported to SQLite database {2}'
