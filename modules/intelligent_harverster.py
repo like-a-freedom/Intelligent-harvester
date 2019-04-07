@@ -59,6 +59,18 @@ class feedCollector():
 
             feed = requests.get(feedPack[0])
 
+        except requests.exceptions.SSLError as sslErr:
+            systemService.logEvent(
+                self,
+                message='Feed `{0}` can not downloaded. Error {1}'
+                .format(
+                    feedPack[1],
+                    sslErr,
+                    ),
+                logLevel='ERROR'
+                )
+            os.sys.exit(1)
+
         except requests.exceptions.ConnectionError as connErr:  # except (ConnectTimeout, HTTPError, ReadTimeout, Timeout, ConnectionError):
             systemService.logEvent(
                 self,
@@ -69,7 +81,7 @@ class feedCollector():
                     ),
                 logLevel='ERROR'
                 )
-            sys.exit(1)
+            os.sys.exit(1)
         
         except requests.exceptions.HTTPError as httpErr:
             systemService.logEvent(
@@ -81,19 +93,7 @@ class feedCollector():
                     ),
                 logLevel='ERROR'
                 )
-            sys.exit(1)
-
-        except requests.exceptions.SSLError as sslErr:
-            systemService.logEvent(
-                self,
-                message='Feed `{0}` can not downloaded. Error {1}'
-                .format(
-                    feedPack[1],
-                    sslErr,
-                    ),
-                logLevel='ERROR'
-                )
-            sys.exit(1)
+            os.sys.exit(1)
 
         feedSize = round(len(feed.content) / 1024, 2)
 
@@ -440,7 +440,7 @@ class feedProcessor():
                     'Error while parsing iocs from feed: invalid type specified',
                     logLevel='ERROR')
                 print('[!] Invalid type specified.')
-                sys.exit(0)
+                os.sys.exit(0)
 
             return pattern
 
