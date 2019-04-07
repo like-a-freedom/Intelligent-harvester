@@ -4,7 +4,7 @@
 #   Created by Anton Solovey, 2019
 #   This module is intended to get TI feeds from various sources
 #
-#    Inspired by
+#   Inspired by
 #   https://github.com/SoulSec/riruka/blob/master/riruka.py
 #   https://github.com/P1llus/getfeeds
 #   https://github.com/csirtgadgets/bearded-avenger
@@ -13,8 +13,6 @@
 #   https://github.com/certtools/intelmq
 #   https://github.com/mlsecproject/combine
 #   https://github.com/InQuest/python-iocextract
-#
-#   Demonize python: https://itrus.su/2016/04/12/python-скрипт-как-демонслужба-systemd/
 #
 #   ------------------------------
 
@@ -112,9 +110,9 @@ class feedCollector():
             logLevel='INFO'
             )
 
-        #TODO: make prerocessing method instead of process in method return
+        feed = feedProcessor.prerocessFeed(self, feed.text)
 
-        return re.split('; |;|, |,|\n|\r|\r\n|\t', feed.text.replace("\r","")), feedPack[1], feedSize
+        return feed, feedPack[1], feedSize
 
     def batchFeedDownload(self, feedPack, proc: int):
         """
@@ -209,6 +207,21 @@ class feedProcessor():
     Feed processing: parsing
     """
 
+    def prerocessFeed(self, feed: str):
+        """
+        Preprocess feeds: remove comments, delimiters
+        :param feedPack: List of IoCs
+        :return: Clean cleaned list of IoCs
+        """
+
+        # Remove any delimiters
+        normalizedFeed = re.split('; |;|, |,|\n|\r|\r\n|\t', feed.replace("\r",""))
+        
+        # Remove any `#` comments from feeds
+        processedFeed = ([item for item in normalizedFeed if not item.startswith('#')])
+
+        return processedFeed
+
     def removeComments(self, feedData: list):
         """
         Removes all comments from text feed
@@ -270,8 +283,7 @@ class feedProcessor():
 
         startTime = datetime.now()
 
-        ### Remove all `#` comments from feed
-        feed = self.removeComments(feedData[0])
+        feed = feedData[0]
 
         ### Iterate over lists and match IOCs
         url_list = list(filter(urlPattern.match, feed))
