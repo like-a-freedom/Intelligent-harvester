@@ -405,6 +405,14 @@ class feedProcessor():
             return ip
 
         def guessIocType(self, iocType):
+            """
+            Collection of regex that use to parse
+            indicators of compomise from
+            threat intelligence feeds
+            :param iocType: Type should be matched
+            :return: Regex pattern
+            """
+
             iocPatterns = {
                 "ipv4": r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$",
                 "domain": r"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}",
@@ -525,7 +533,7 @@ class feedExporter():
 
     def txtExporter(self, filename, iocs: list):
         """
-        Writes different lists to the txt files mentioned
+        Writes parsed indicators of compromise to the specified txt file
         :param filename: The open file
         :param iocs: IOCs that will be stored
         """
@@ -574,7 +582,8 @@ class feedExporter():
 
     def sqliteExporter(self, filename, iocs: list):
         """
-        :param filename: file of sqlite that will be exported to
+        Writes parsed indicators of compromise to the specified sqlite file
+        :param filename: SQLite file that will be exported to
         :param iocs: IOCs that will be stored in DB
         """
 
@@ -687,8 +696,8 @@ class systemService():
     def logEvent(self, message, logLevel):
         """
         Write meesages into log file
-        :param message: message that will be written into log file
-        :param logLevel: severity level of message (error, warn, info or debug)
+        :param message: Message that will be written into log file
+        :param logLevel: Severity level of the message (error, warn, info or debug)
         """
 
         logging.basicConfig(
