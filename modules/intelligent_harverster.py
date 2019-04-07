@@ -218,6 +218,8 @@ class feedProcessor():
         #TODO: remove obsolete code
         #feed = feedData.decode('utf-8').split('\n')
         #return (str([item for item in feedData if not item.startswith('#')]))
+
+        #TODO: move this method to the new preprocessing method (see getFeed todo)
         
         clearedFeed = []
 
@@ -270,9 +272,6 @@ class feedProcessor():
 
         ### Remove all `#` comments from feed
         feed = self.removeComments(feedData[0])
-        
-        '''for item in feed:
-            print(item)'''
 
         ### Iterate over lists and match IOCs
         url_list = list(filter(urlPattern.match, feed))
