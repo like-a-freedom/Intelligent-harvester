@@ -444,38 +444,6 @@ class feedProcessor():
 
             return pattern
 
-        def typeGuess(self, indicator):  # TODO: remove (obsolete)
-            """
-            Guess the type of the indicator
-            returns string in "IPv4", "IPv6", "md5", "sha1", "sha256", "domain"
-            TODO: more types 
-            """
-            if re.match("^\w{32}$", indicator):
-                return "md5"
-            elif re.match("^\w{40}$", indicator):
-                return "sha1"
-            elif re.match("^\w{64}$", indicator):
-                return "sha256"
-            elif re.match(
-                    "[a-zA-Z0-9_]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?!([a-zA-Z0-9]*\.[a-zA-Z0-9]*\.[a-zA-Z0-9]*\.))(?:[A-Za-z0-9](?:[a-zA-Z0-9-]*[A-Za-z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?",
-                    indicator):
-                return "email"
-            elif re.match(
-                    "((?: http | ftp | https)\: \/\/(?: [\w +?\.\w+])+[a-zA-Z0-9\~\!\@\  # \$\%\^\&\*\(\)_\-\=\+\\\/\?\.\:\;]+)",
-                    indicator):
-                return "url"
-            elif re.match("(rule\s[\w\W]{, 30}\{[\w\W\s] *\})", indicator):
-                return "yara"
-            else:
-                try:
-                    i = IP(indicator)
-                    if i.version() == 4:
-                        return "IPv4"
-                    else:
-                        return "IPv6"
-                except ValueError:
-                    return "domain"
-
         def bracket(self, domain):
             """Add protective bracket to a domain"""
 
@@ -530,7 +498,7 @@ class feedExporter():
     Feed export methods
     """
 
-    def txtExporter(self, filename, iocs: list):
+    def txtExporter(self, filename: str, iocs: list):
         """
         Writes parsed indicators of compromise to the specified txt file
         :param filename: The open file
@@ -579,7 +547,7 @@ class feedExporter():
             data = [["Name", "Score"], [name, score]]
             writer.writerows(data)
 
-    def sqliteExporter(self, filename, iocs: list):
+    def sqliteExporter(self, filename: str, iocs: list):
         """
         Writes parsed indicators of compromise to the specified sqlite file
         :param filename: SQLite file that will be exported to
