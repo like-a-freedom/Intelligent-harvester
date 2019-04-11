@@ -106,16 +106,16 @@ if __name__ == "__main__":
     feedPack: list = []
 
     # Iterate over config section 'feeds' to get all feeds URLs
-    for (feedName, feedUrl) in config.items('feeds'):
+    for (feedName, feedUrl) in config.items('osint_feeds'):
         feedPack.append([feedUrl, feedName])
 
-    # Download all the feed and parse it after
+    # Download all the feeds and parse it after
+    
     feedPack = feedCollector.batchFeedDownload(feedPack, args.processes)
     parsedData = feedProcessor.batchFeedParse(feedPack, args.processes)
 
     # Exporting IoCs to the file specified
     feedExporter.txtExporter('indicators.txt', parsedData)
-
 
     # Log results
     endTime = datetime.now()

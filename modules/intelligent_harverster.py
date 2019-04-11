@@ -27,6 +27,7 @@ import requests
 import unicodedata
 import configparser
 from IPy import IP
+from OTXv2 import OTXv2
 from modules import pdfConverter
 from collections import defaultdict
 from xlrd import open_workbook, sheet
@@ -43,6 +44,19 @@ class feedCollector():
             message='*** Intelligent harvester started ***',
             logLevel='INFO'
             )
+
+        #TODO: initialize OTX with api key
+        """
+        # Initalize OTX
+        try:
+            self.otx = OTXv2(api_key)
+        except Exception as otxInitErr:
+            systemService.logEvent(
+            self,
+            message='Failed to initialize OTX: ' + otxInitErr,
+            logLevel='ERROR'
+            )
+        """
 
     def getFeed(self, feedPack):
         """
@@ -179,7 +193,6 @@ class feedCollector():
                         d[key].append(ip)
     '''
 
-    '''
     def getOTX(self, days):
         """
         Gets the information from Alienvault OTX
@@ -187,20 +200,45 @@ class feedCollector():
         :return: List of IP addresses and domains from the specific feed
         """
 
-        pulses = otx.getsince((datetime.now() - timedelta(days=days)).isoformat())
+        otx = OTXv2('0cd94635a2655f3455978567d7d352339cbe710712cda594034a496982b11561')
+
+        try:
+            pulses = otx.getsince((datetime.now() - timedelta(days=days)).isoformat())
+            #pulses = otx.getall()
+            print("OTX feed download complete: %s events received" % len(pulses))
+            
+            systemService.logEvent(
+                self,
+                message='OTX feed download complete: %s events received' % len(pulses), 
+                logLevel='INFO'
+            )
+        except Exception as otxDownloadFailedError:
+            systemService.logEvent(
+                self,
+                message='OTX feed download failed: ' % otxDownloadFailedError, 
+                logLevel='INFO'
+            )
         
         mappings = {
-            'IPv4': 'alienvaultip',
-            'URL': 'alienvaulturl',
-            'domain': 'alienvaultdomain'
-        }
+            'hostname': 'hostname',
+            'IPv4': 'ip', 
+            'URL': 'url',
+            'domain': 'domain',
+            'FileHash-SHA1': 'sha1',
+            'FileHash-SHA256': 'sha256',
+            'FileHash-MD5': 'md5'
+            #'YARA': 'yara',
+            }
+        
+        otxDict = defaultdict(list)
 
         for index, feeds in enumerate(pulses):
             for pulse in pulses[index]['indicators']:
-                t = pulse['type']
-                if t in mappings:
-                    d[mappings[t]].append(pulse['indicator'])
-        '''
+                type = pulse['type']
+                if type in mappings:
+                    otxDict[mappings[type]].append(pulse['indicator'])
+
+        return otxDict
 
 class feedProcessor():
     """
