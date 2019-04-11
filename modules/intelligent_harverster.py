@@ -440,7 +440,6 @@ class feedProcessor():
         pool.join()
 
         return parsedData
-
     class utils():
 
         def parseIP(self, indicator):  # TODO: remove this method as obsolete
