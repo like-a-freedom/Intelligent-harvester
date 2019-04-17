@@ -58,7 +58,7 @@ class feedCollector():
             )
         """
 
-    def getFeed(self, feedPack):
+    def getFeed(self, feedPack: list) -> dict:
         """
         Download the feeds specified. Just get the feed its own format without parsing
         :param feedUrl: The location of the source to download
@@ -124,11 +124,15 @@ class feedCollector():
             logLevel='INFO'
             )
 
-        feed = feedProcessor.prerocessFeed(self, feed.text)
+        feedDict = dict()
+        
+        feedDict['feedName'] = feedPack[1]
+        feedDict['feedSize'] = feedSize
+        feedDict['iocs'] = feedProcessor.prerocessFeed(self, feed.text)
 
-        return feed, feedPack[1], feedSize
+        return feedDict
 
-    def batchFeedDownload(self, feedPack, proc: int):
+    def batchFeedDownload(self, feedPack: list, proc: int) -> list:
         """
         Downloads collection of feeds in parallel processes
         :param feedsPack: Feed data
@@ -139,59 +143,61 @@ class feedCollector():
             self,
             message='Download started',
             logLevel = 'INFO'
-            )
-
-        downloadStartTime = datetime.now()
-
-        # Define process pool and start download feeds from feedPack in parallel processes
-        pool = ProcessPool(proc)
-        feedData = pool.map(self.getFeed, feedPack)
-    
-        downloadEndTime = datetime.now()
-        downloadTime = downloadEndTime - downloadStartTime
-
-        # Calcuate total feeds size
-        totalFeedsSize: int = 0
-
-        for item in feedData:
-            totalFeedsSize = totalFeedsSize + item[2]
-
-        # Log results
-        systemService.logEvent(
-            self,
-            message = 'Successfully downloaded {0} feeds of {1} Kbytes in {2} seconds {3} msec'
-            .format(
-                len(feedPack),
-                round(totalFeedsSize, 1),
-                downloadTime.seconds,
-                downloadTime.microseconds,
-                ), 
-            logLevel = 'INFO'
-            )
+            )        
         
-        pool.close()
-        pool.join()
+        if proc == 1:
 
-        return feedData
+            downloadStartTime = datetime.now()
 
-    '''
-    def mapSource(self, url, key):
-        """
-        Formats and appends IP addresses to the belonging list
-        :param url: The variable at the top storing the url
-        :param key: The key to be used in the list generation
-        :return: A formated version of a ip list
-        """
+            feedData = []
 
-        d = defaultdict(list)
+            # Iterate over feed links and download feeds
+            for link in feedPack:
+                feedData.append(self.getFeed(link))
 
-        for line in self.getFeed(url).splitlines():
-            if len(line) > 0:
-                ips = feedProcessor.utils.parseIP(line.lstrip().rstrip())
-                if ips:
-                    for ip in ips:
-                        d[key].append(ip)
-    '''
+            downloadEndTime = datetime.now()
+            downloadTime = downloadEndTime - downloadStartTime
+            
+            return feedData
+
+        else:
+            
+            # Log download start time
+            downloadStartTime = datetime.now()
+
+            # Define process pool and start download feeds from feedPack in parallel processes
+            pool = ProcessPool(proc)
+
+            # Download feeds in a number of separate processes
+            feedData = pool.map(self.getFeed, feedPack)
+                        
+            # Log download end time
+            downloadEndTime = datetime.now()
+            downloadTime = downloadEndTime - downloadStartTime
+
+            # Calcuate total feeds size
+            totalFeedsSize: int = 0
+            
+            for dictItem in feedData:
+                totalFeedsSize += dictItem['feedSize']
+
+            # Log results
+            systemService.logEvent(
+                self,
+                message = 'Successfully downloaded {0} feeds of {1} Kbytes in {2} seconds {3} msec'
+                .format(
+                    len(feedPack),
+                    round(totalFeedsSize, 1),
+                    downloadTime.seconds,
+                    downloadTime.microseconds,
+                    ), 
+                logLevel = 'INFO'
+                )
+            
+            pool.close()
+            pool.join()
+
+            return feedData
 
     def getOTX(self, days):
         """
@@ -206,7 +212,6 @@ class feedCollector():
             pulses = otx.getsince((datetime.now() - timedelta(days=days)).isoformat())
             #pulses = otx.getall()
             print("OTX feed download complete: %s events received" % len(pulses))
-            
             systemService.logEvent(
                 self,
                 message='OTX feed download complete: %s events received' % len(pulses), 
@@ -260,27 +265,7 @@ class feedProcessor():
 
         return processedFeed
 
-    def removeComments(self, feedData: list):
-        """
-        Removes all comments from text feed
-        :param feedData: Feed data, list
-        """
-        
-        #TODO: remove obsolete code
-        #feed = feedData.decode('utf-8').split('\n')
-        #return (str([item for item in feedData if not item.startswith('#')]))
-
-        #TODO: move this method to the new preprocessing method (see getFeed todo)
-        
-        clearedFeed = []
-
-        for element in feedData:
-            if not str(element).startswith('#'):
-                clearedFeed.append(element)
-
-        return clearedFeed
-
-    def parseFeed(self, feedData):
+    def parseFeed(self, feedData: list) -> dict:
         """
         Parse feed data
         :param feedData: Threat intelligence feed
@@ -321,22 +306,22 @@ class feedProcessor():
 
         startTime = datetime.now()
 
-        feed = feedData[0]
+        iocs = feedData['iocs']
 
         ### Iterate over lists and match IOCs
-        url_list = list(filter(urlPattern.match, feed))
-        ip_list = list(filter(ipPattern.match, feed))
-        domain_list = list(filter(domainPattern.match, feed))
-        email_list = list(filter(emailPattern.match, feed))
-        regkey_list = list(filter(regkeyPattern.match, feed))
-        md5_list = list(filter(md5Pattern.match, feed))
-        sha1_list = list(filter(sha1Pattern.match, feed))
-        sha256_list = list(filter(sha256Pattern.match, feed))
-        sha512_list = list(filter(sha512Pattern.match, feed))
-        filename_list = list(filter(filenamePattern.match, feed))
-        filepath_list = list(filter(filepathPattern.match, feed))
-        cve_list = list(filter(cvePattern.match, feed))
-        yara_list = list(filter(yaraPattern.match, feed))
+        url_list = list(filter(urlPattern.match, iocs))
+        ip_list = list(filter(ipPattern.match, iocs))
+        domain_list = list(filter(domainPattern.match, iocs))
+        email_list = list(filter(emailPattern.match, iocs))
+        regkey_list = list(filter(regkeyPattern.match, iocs))
+        md5_list = list(filter(md5Pattern.match, iocs))
+        sha1_list = list(filter(sha1Pattern.match, iocs))
+        sha256_list = list(filter(sha256Pattern.match, iocs))
+        sha512_list = list(filter(sha512Pattern.match, iocs))
+        filename_list = list(filter(filenamePattern.match, iocs))
+        filepath_list = list(filter(filepathPattern.match, iocs))
+        cve_list = list(filter(cvePattern.match, iocs))
+        yara_list = list(filter(yaraPattern.match, iocs))
 
         """
         Defang
@@ -353,10 +338,9 @@ class feedProcessor():
             len(md5_list) + len(sha1_list) + len(sha256_list) + len(sha512_list) + \
             len(filename_list) + len(filepath_list) + len(cve_list) + \
             len(yara_list)
-
+        
         """
         # Just for debug
-        print('\nFeed: ', feedData[1])
         print('IP: ', len(ip_list))
         print('Domain: ', len(domain_list))
         print('URL: ', len(url_list))
@@ -376,26 +360,39 @@ class feedProcessor():
 
         systemService.logEvent(
             self,
-            message=
-            '{0} indicators were parsed from feed `{1}` in {2} sec {3} msec'
+            message='{0} indicators were parsed from feed `{1}` in {2} sec {3} msec'
             .format(
                 totalParsed, 
-                feedData[1], 
+                feedData['feedName'], 
                 delta.seconds, 
                 delta.microseconds
                 ),
             logLevel='INFO'
             )
 
-        #TODO: return ioc type
-        return \
-            ip_list + url_list + domain_list + email_list + regkey_list + \
-            md5_list + sha1_list + sha256_list + sha512_list + filename_list + \
-            filepath_list + cve_list + yara_list, \
-            totalParsed, \
-            feedData[1]
+        # Insert IOCs into dict with a type of IOCs
 
-    def batchFeedParse(self, feedPack, proc: int):
+        parsedDict = defaultdict(defaultdict(list).copy)
+
+        parsedDict['feedName'] = feedData['feedName']
+        parsedDict['totalIocs'] = totalParsed
+        parsedDict['ioc']['ip'] = ip_list
+        parsedDict['ioc']['url'] = url_list
+        parsedDict['ioc']['domain'] = domain_list
+        parsedDict['ioc']['email'] = email_list
+        parsedDict['ioc']['regkey'] = regkey_list
+        parsedDict['ioc']['md5'] = md5_list
+        parsedDict['ioc']['sha1'] = sha1_list
+        parsedDict['ioc']['sha256'] = sha256_list
+        parsedDict['ioc']['sha512'] = sha512_list
+        parsedDict['ioc']['filename'] = filename_list
+        parsedDict['ioc']['filepath'] = filepath_list
+        parsedDict['ioc']['cve'] = cve_list
+        parsedDict['ioc']['yara'] = yara_list
+
+        return parsedDict
+
+    def batchFeedParse(self, feedPack: list, proc: int):
         """
         Batch feed parse
         :param feedsPack: Feed data
@@ -404,7 +401,7 @@ class feedProcessor():
         
         systemService.logEvent(
             self,
-            message='Parsing started', 
+            message='Parsing started',
             logLevel='INFO'
             )
 
@@ -412,16 +409,23 @@ class feedProcessor():
 
         # Define process pool and start download feeds from feedPack in parallel processes
         pool = ProcessPool(proc)
-        parsedData = pool.map(self.parseFeed, feedPack)
+        parsedData = []
+
+        if proc == 1:   
+            for dictItem in feedPack:
+                parsedData.append(self.parseFeed(dictItem))
+        else:
+            parsedData = pool.map(self.parseFeed, feedPack)
 
         parseEndTime = datetime.now()
         parseTime = parseEndTime - parseStartTime
-        
+
         # Calculate total elements parsed from all feeds
         totalParsed: int = 0
 
-        for item in parsedData:
-            totalParsed = totalParsed + item[1]
+        for key in parsedData:
+            totalParsed += key['totalIocs']
+
 
         # Log results
         systemService.logEvent(
@@ -435,11 +439,12 @@ class feedProcessor():
                 ),
             logLevel='INFO'
             )
-        
+
         pool.close()
         pool.join()
 
         return parsedData
+
     class utils():
 
         def parseIP(self, indicator):  # TODO: remove this method as obsolete
@@ -475,7 +480,7 @@ class feedProcessor():
                 "filename": r"\b([A-Za-z0-9-_\.]+\.(exe|dll|bat|sys|htm|html|js|ts|py|jar|so|elf|bin|jpg|png|vb|scr|pif|chm|zip|rar|taz|gz|cab|pdf|doc|docx|ppt|pptx|xls|xlsx|swf|gif))\b",
                 "filepath": r"\b[A-Z]:\\[A-Za-z0-9-_\.\\]+\b",
                 "cve": r"CVE-\d{4}-\d{4,7}",
-                "email": r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+                #"email": r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
                 "comment": r"(#.*$)",
                 "comment_v2": r"^([^#].*)?^\s*"
             }
@@ -547,27 +552,26 @@ class feedExporter():
     Feed export methods
     """
 
-    def txtExporter(self, filename: str, iocs: list):
+    def txtExporter(self, filename: str, iocs: defaultdict):
         """
         Writes parsed indicators of compromise to the specified txt file
         :param filename: The open file
-        :param iocs: IOCs that will be stored
+        :param iocs: IOCs that will be stored, dict
         """
 
         totalIOCs: int = 0
         providersCount: int = 0
 
-        #filename.write("".join("{}\t[{}]\n".format(t, name) for t in dict[key]))
-        i: int = 0
         with open(filename, 'w', errors="ignore") as file:
 
-            for list in iocs:
-
-                totalIOCs += list[1]
-                providersCount = providersCount + 1
-                
-                for element in list[0]:
-                    file.write("%s\n" % element)
+            for dictItem in iocs:
+                providersCount += 1
+                totalIOCs += int(dictItem['totalIocs'])
+                for key, value in dictItem['ioc'].items():
+                    for item in value:
+                        # Check if dict value is not empty
+                        if item:
+                            file.write('{0}\n'.format(item))
 
         systemService.logEvent(
             self,
@@ -596,7 +600,7 @@ class feedExporter():
             data = [["Name", "Score"], [name, score]]
             writer.writerows(data)
 
-    def sqliteExporter(self, filename: str, iocs: list):
+    def sqliteExporter(self, filename: str, iocs: defaultdict):
         """
         Writes parsed indicators of compromise to the specified sqlite file
         :param filename: SQLite file that will be exported to
@@ -629,14 +633,14 @@ class feedExporter():
             db_cursor = db.cursor()
 
             db_cursor.execute('''CREATE TABLE IF NOT EXISTS indicators 
-                    (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        ioc_value TEXT NOT NULL,
-                        ioc_type TEXT,
-                        provider_name TEXT,
-                        created_date TEXT
-                    )
-                ''')
+                                (
+                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    ioc_value TEXT NOT NULL,
+                                    ioc_type TEXT,
+                                    provider_name TEXT,
+                                    created_date TEXT
+                                )
+                            ''')
             db.commit()
 
         # Catch error if there is integrity error
@@ -649,39 +653,47 @@ class feedExporter():
             db.rollback()
             os.sys.exit(1)
 
-        for list in iocs:
+        # Iterate over iocs dict and cook SQL INSERTS
+        for dictItem in iocs:
+			
+            providersCount += 1
+            totalIOCs += int(dictItem['totalIocs'])
 
-            totalIOCs += list[1]
-            providersCount = providersCount +1
-
-            # Iterate over iocs array and cook SQL INSERTS
-            for element in list[0]:
-                # Just for debug
-                # print('IoC {0} provider {1}'.format(element, list[2]))
-                
-                try:
-                        db.execute(
+            for key, value in dictItem['ioc'].items():
+                for item in value:
+                    if item:
+                    # Just for debug
+                    # print('IoC {0} provider {1}'.format(element, list[2]))
+                    
+                        try:
+                            db.execute(
                             '''
-                            INSERT OR REPLACE INTO indicators (
+                            INSERT OR REPLACE INTO indicators 
+                            (
                                 ioc_value,
                                 ioc_type,
                                 provider_name,
                                 created_date
-                                )
+                            )
                             VALUES (?, ?, ?, ?)
-                            ''', (element, "dummy", list[2], datetime.now())
+                            ''', 
+                            (
+                                item,
+                                key,
+                                dictItem['feedName'], 
+                                datetime.now())
                             )
 
-                except sqlite3.IntegrityError as sqlIntegrityError:
-                    systemService.logEvent(
-                        self,
-                        message='SQLite error: {0}'
-                        .format(
-                            sqlIntegrityError.args[0]),  # column name is not unique
-                            logLevel='ERROR'
-                        )
-                    db.rollback()
-                    os.sys.exit(1)
+                        except sqlite3.IntegrityError as sqlIntegrityError:
+                            systemService.logEvent(
+                                self,
+                                message='SQLite error: {0}'
+                                .format(
+                                sqlIntegrityError.args[0]),  # column name is not unique
+                                logLevel='ERROR'
+                                )
+                            db.rollback()
+                            os.sys.exit(1)
 
             db.commit()
 

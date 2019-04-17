@@ -90,6 +90,7 @@ if __name__ == "__main__":
 
     if not args.processes:
         args.processes = 1
+        print('Running in 1 proccess')
     elif args.processes > 1:
         print('Running in %d proccesses' % args.processes)
         logEvent('Running in {0} proccesses'.format(args.processes), 'INFO')
@@ -109,13 +110,15 @@ if __name__ == "__main__":
     for (feedName, feedUrl) in config.items('osint_feeds'):
         feedPack.append([feedUrl, feedName])
 
-    # Download all the feeds and parse it after
-    
-    feedPack = feedCollector.batchFeedDownload(feedPack, args.processes)
-    parsedData = feedProcessor.batchFeedParse(feedPack, args.processes)
+    # Download all the feeds and parse it
+
+    feeds = feedCollector.batchFeedDownload(feedPack, args.processes)
+    parsedData = feedProcessor.batchFeedParse(feeds, args.processes)
 
     # Exporting IoCs to the file specified
     feedExporter.txtExporter('indicators.txt', parsedData)
+    feedExporter.sqliteExporter('iocs.db', parsedData)
+
 
     # Log results
     endTime = datetime.now()
