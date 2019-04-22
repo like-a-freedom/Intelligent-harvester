@@ -16,10 +16,10 @@ So simple:
 
 `python collect.py`
 
-Or if you want to specify path to configuration file:
+Or if you want to specify path to configuration file and export IoCs in plain text newline as delimiter:
 
-`python collect.py -c "X:\path-to-harvester\settings.conf"`
+`python collect.py --config "X:\path-to-harvester\settings.conf" --output txt`
 
-Or if you want to specify number of parallel proccesses for download and parsing:
+Or if you want to specify number of parallel proccesses for download and parsing and export IoCs to SQLite database:
 
-`python collect.py -c "X:\path-to-harvester\settings.conf" --processes 4`
+`python collect.py --config "X:\path-to-harvester\settings.conf" --processes 4 --output sqlite`

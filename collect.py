@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     argparser = argparse.ArgumentParser()
     argparser.add_argument(
-        '-c',
+        '--config',
         dest='config',
         default=None,
         help='Provide a specific configuration file path.')
@@ -85,6 +85,11 @@ if __name__ == "__main__":
         dest='processes',
         default=None,
         help='Number of processes for dowload feeds.')
+    argparser.add_argument(
+        '--output',
+        dest='output',
+        default=None,
+        help='Output IoCs to plain text file with newline delimiter.')
 
     args = argparser.parse_args()
 
@@ -115,9 +120,11 @@ if __name__ == "__main__":
     feeds = feedCollector.batchFeedDownload(feedPack, args.processes)
     parsedData = feedProcessor.batchFeedParse(feeds, args.processes)
 
-    # Exporting IoCs to the file specified
-    feedExporter.txtExporter('indicators.txt', parsedData)
-    feedExporter.sqliteExporter('iocs.db', parsedData)
+    # Exporting IoCs to the txt or sqlite that user specified by arguments
+    if args.output == 'txt':
+        feedExporter.txtExporter('indicators.txt', parsedData)
+    elif args.output == 'sqlite':
+        feedExporter.sqliteExporter('iocs.db', parsedData)
 
 
     # Log results
