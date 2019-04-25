@@ -259,11 +259,11 @@ class feedProcessor():
 
         # Remove any delimiters
         step1 = re.split('; |;|, |,|\n|\r|\r\n|\t', feed.replace("\r",""))
-        step2 = [item.strip('"') for item in step1]
-        step3 = [item.strip("'") for item in step2]
+        step2 = [item.replace('"', '') for item in step1]
+        step3 = [item.replace("'", '') for item in step2]
         # Remove any `#` comments from feeds
         processedFeed = [item for item in step3 if not item.startswith('#')]
-
+        print(processedFeed)
         return processedFeed
 
     def parseFeed(self, feedData: list) -> dict:
