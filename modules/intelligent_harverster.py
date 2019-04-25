@@ -258,10 +258,11 @@ class feedProcessor():
         """
 
         # Remove any delimiters
-        normalizedFeed = re.split('; |;|, |,|\n|\r|\r\n|\t', feed.replace("\r",""))
-        
+        step1 = re.split('; |;|, |,|\n|\r|\r\n|\t', feed.replace("\r",""))
+        step2 = [item.strip('"') for item in step1]
+        step3 = [item.strip("'") for item in step2]
         # Remove any `#` comments from feeds
-        processedFeed = ([item for item in normalizedFeed if not item.startswith('#')])
+        processedFeed = [item for item in step3 if not item.startswith('#')]
 
         return processedFeed
 
