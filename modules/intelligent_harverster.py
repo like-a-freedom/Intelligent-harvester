@@ -34,7 +34,6 @@ from xlrd import open_workbook, sheet
 from datetime import datetime, timedelta
 from multiprocessing import Pool as ProcessPool
 
-
 class feedCollector():
 
     def __init__(self):
@@ -259,11 +258,22 @@ class feedProcessor():
 
         # Remove any delimiters
         step1 = re.split('; |;|, |,|\n|\r|\r\n|\t', feed.replace("\r",""))
+        # Remove double quotes
         step2 = [item.replace('"', '') for item in step1]
+        # Remove single quotes
         step3 = [item.replace("'", '') for item in step2]
         # Remove any `#` comments from feeds
         processedFeed = [item for item in step3 if not item.startswith('#')]
-        print(processedFeed)
+
+        # TODO: remove defang, remove 127.0.0.1 IPs
+
+        """
+        Defang
+        for ioc in list:
+            # Remove brackets if defanged
+            i = re.sub(b'\[\.\]', b'.', ioc)
+        """
+
         return processedFeed
 
     def parseFeed(self, feedData: list) -> dict:
@@ -323,13 +333,6 @@ class feedProcessor():
         filepath_list = list(filter(filepathPattern.match, iocs))
         cve_list = list(filter(cvePattern.match, iocs))
         yara_list = list(filter(yaraPattern.match, iocs))
-
-        """
-        Defang
-        for ioc in list:
-            # Remove brackets if defanged
-            i = re.sub(b'\[\.\]', b'.', ioc)
-        """
 
         endTime = datetime.now()
         delta = endTime - startTime
@@ -481,7 +484,7 @@ class feedProcessor():
                 "filename": r"\b([A-Za-z0-9-_\.]+\.(exe|dll|bat|sys|htm|html|js|ts|py|jar|so|elf|bin|jpg|png|vb|scr|pif|chm|zip|rar|taz|gz|cab|pdf|doc|docx|ppt|pptx|xls|xlsx|swf|gif))\b",
                 "filepath": r"\b[A-Z]:\\[A-Za-z0-9-_\.\\]+\b",
                 "cve": r"CVE-\d{4}-\d{4,7}",
-                #"email": r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
+                #"email_v2": r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
                 "comment": r"(#.*$)",
                 "comment_v2": r"^([^#].*)?^\s*"
             }
@@ -493,7 +496,8 @@ class feedProcessor():
                     self,
                     message=
                     'Error while parsing iocs from feed: invalid type specified',
-                    logLevel='ERROR')
+                    logLevel='ERROR'
+                    )
                 print('[!] Invalid type specified.')
                 os.sys.exit(0)
 
