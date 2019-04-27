@@ -256,14 +256,16 @@ class feedProcessor():
         :return: Clean cleaned list of IoCs
         """
 
-        # Remove any delimiters
-        step1 = re.split('; |;|, |,|\n|\r|\r\n|\t', feed.replace("\r",""))
-        # Remove double quotes
-        step2 = [item.replace('"', '') for item in step1]
-        # Remove single quotes
-        step3 = [item.replace("'", '') for item in step2]
+        # Clearing feed
+        step1 = re.split(
+            '; |;|, |,|\n|\r|\r\n|\t', 
+            feed
+                .replace("\r","")
+                .replace('"', '')
+                .replace("'", '')
+        )
         # Remove any `#` comments from feeds
-        processedFeed = [item for item in step3 if not item.startswith('#')]
+        step2 = [item for item in step1 if not item.startswith('#')]
 
         # TODO: remove defang, remove 127.0.0.1 IPs
 
@@ -274,7 +276,7 @@ class feedProcessor():
             i = re.sub(b'\[\.\]', b'.', ioc)
         """
 
-        return processedFeed
+        return step2
 
     def parseFeed(self, feedData: list) -> dict:
         """
