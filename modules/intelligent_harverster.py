@@ -127,7 +127,7 @@ class feedCollector():
         
         feedDict['feedName'] = feedPack[1]
         feedDict['feedSize'] = feedSize
-        feedDict['iocs'] = feedProcessor.prerocessFeed(self, feed.text)
+        feedDict['iocs'] = feedProcessor.preprocessFeed(self, feed.text)
 
         return feedDict
 
@@ -249,7 +249,7 @@ class feedProcessor():
     Feed processing: parsing
     """
 
-    def prerocessFeed(self, feed: str):
+    def preprocessFeed(self, feed: str):
         """
         Preprocess feeds: remove comments, delimiters
         :param feedPack: List of IoCs
