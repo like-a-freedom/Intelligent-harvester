@@ -619,7 +619,7 @@ class feedExporter():
 
         # Let's to to connect to the specified database
         try:
-            db = sqlite3.connect(filename)
+            db = sqlite3.connect(filename, isolation_level=None)
         except Error as dbErr:
             systemService.logEvent(
                 self,
@@ -655,6 +655,28 @@ class feedExporter():
             systemService.logEvent(
                 self,
                 message='Error while try to create table: ' + tableCreateError,
+                logLevel='ERROR'
+                )
+            db.rollback()
+            os.sys.exit(1)
+        
+        # Truncate table `indicators` if not empty
+
+        try:
+            #db.execute("PRAGMA foreign_keys = ON")
+            db_cursor = db.cursor()
+
+            db_cursor.execute("DELETE FROM indicators;")
+            db_cursor.execute("UPDATE SQLITE_SEQUENCE SET seq = 0 WHERE name = 'indicators';")
+            db_cursor.execute("VACUUM")
+
+            db.commit()
+
+        # Catch error if there is integrity error
+        except sqlite3.IntegrityError as tableTruncateError:
+            systemService.logEvent(
+                self,
+                message='Error while try to truncate `indicators` table: ' + tableCreateError,
                 logLevel='ERROR'
                 )
             db.rollback()
