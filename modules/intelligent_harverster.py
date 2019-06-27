@@ -267,7 +267,7 @@ class feedProcessor():
         # Remove any `#` comments from feeds
         step2 = [item for item in step1 if not item.startswith('#')]
 
-        # TODO: remove defang, remove 127.0.0.1 IPs
+        # TODO: remove defang, remove 127.0.0.1, localhost IPs
 
         """
         Defang
