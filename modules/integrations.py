@@ -25,17 +25,9 @@ def getOTX(self, days):
         pulses = otx.getsince((datetime.now() - timedelta(days=days)).isoformat())
         #pulses = otx.getall()
         print("OTX feed download complete: %s events received" % len(pulses))
-        systemService.logEvent(
-            self,
-            message='OTX feed download complete: %s events received' % len(pulses), 
-            logLevel='INFO'
-        )
+        logger.info('OTX feed download complete: %s events received' % len(pulses))
     except Exception as otxDownloadFailedError:
-        systemService.logEvent(
-            self,
-            message='OTX feed download failed: ' % otxDownloadFailedError, 
-            logLevel='INFO'
-        )
+        logger.error('OTX feed download failed: ' % otxDownloadFailedError)
     
     mappings = {
         'hostname': 'hostname',
@@ -61,3 +53,5 @@ def getOTX(self, days):
 def getMISP(self):
     pass
     # TODO: make MISP grabber
+
+#TODO: make custom modules-parser plugins to parse specific feed
