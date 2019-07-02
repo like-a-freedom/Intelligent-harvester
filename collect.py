@@ -15,7 +15,7 @@ from datetime import datetime
 from modules.service import LogManager
 from modules import intelligent_harverster as IH
 
-logger = LogManager.logEvent(__name__)
+logger = LogManager.logEvent(None, __name__)
 
 def loadConfig(configPath=None):
     """

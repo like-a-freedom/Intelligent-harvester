@@ -10,7 +10,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from modules.service import LogManager
 
-logger = LogManager.logEvent(__name__)
+logger = LogManager.logEvent(None, __name__)
 
 def getOTX(self, days):
     """

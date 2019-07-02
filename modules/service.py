@@ -9,7 +9,7 @@ import logging
 
 class LogManager():
 
-    def logEvent(moduleName: str):
+    def logEvent(self, moduleName: str):
         """
         Write meesages into log file
         :param moduleName: Module name to log

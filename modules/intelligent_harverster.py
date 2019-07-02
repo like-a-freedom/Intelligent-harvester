@@ -41,7 +41,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 '''
 
-logger = LogManager.logEvent(__name__)
+logger = LogManager.logEvent(None, __name__)
 
 class FeedCollector():
 
