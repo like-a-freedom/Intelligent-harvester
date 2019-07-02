@@ -12,62 +12,37 @@ import logging
 import argparse
 import configparser
 from datetime import datetime
+from modules.service import LogManager
 from modules import intelligent_harverster as IH
 
+logger = LogManager.logEvent(__name__)
 
 def loadConfig(configPath=None):
     """
-        Load configuration from file
-        """
+    Load configuration from file
+    """
+
     config = configparser.ConfigParser()
     try:
         if configPath == None:
             if os.path.isfile(os.path.join(os.getcwd(), "settings.conf")):
                 config.read(os.path.join(os.getcwd(), "settings.conf"))
-                logEvent('Config loaded successfully', 'INFO')
+                logger.info('Config loaded successfully')
                 return config
             else:
-                logEvent(
-                    message='Configuration file not found', logLevel='ERROR')
+                logger.error('Configuration file not found')
                 exit()
         else:
             config.read(configPath)
-            logEvent('Config loaded successfully', 'INFO')
+            logger.info('Config loaded successfully')
 
             return config
 
     except configparser.NoSectionError:
-        logEvent('Configuration file not found or no sections found there',
-                 'ERROR')
+        logger.info('Configuration file not found or no sections found there')
         exit()
     except configparser.NoOptionError:
-        logEvent('No option in configuration file', 'ERROR')
-
-def logEvent(message, logLevel):
-    '''
-        Write meesages into log file
-        :param message: message that will be written into log file
-        :param logLevel: severity level of message (error, warn, info or debug)
-        '''
-
-    logging.basicConfig(
-        filename='harvester.log',
-        level=logging.INFO,
-        format=
-        '%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%d-%m-%Y %H:%M:%S',
-    )
-    #log = logging.getLogger('sample')
-    log = logging.getLogger('harvester')
-
-    if logLevel == 'ERROR':
-        log.error(message)
-    elif logLevel == 'WARN':
-        log.warning(message)
-    elif logLevel == 'INFO':
-        log.info(message)
-    elif logLevel == 'DEBUG':
-        log.debug(message)
+        logger.info('No option in configuration file')
 
 
 # Execute main class when script is run
@@ -93,20 +68,22 @@ if __name__ == "__main__":
 
     args = argparser.parse_args()
 
+    logger.info('*** Intelligence harverster has been started ***')
+
     if not args.processes:
         args.processes = 1
         print('Running in 1 proccess')
     elif args.processes > 1:
         print('Running in %d proccesses' % args.processes)
-        logEvent('Running in {0} proccesses'.format(args.processes), 'INFO')
+        logger.info('Running in {0} proccesses'.format(args.processes))
 
     startTime = datetime.now()
 
     config = loadConfig(args.config)
 
-    feedCollector = IH.feedCollector()
-    feedProcessor = IH.feedProcessor()
-    feedExporter = IH.feedExporter()
+    feedCollector = IH.FeedCollector()
+    feedProcessor = IH.FeedProcessor()
+    feedExporter = IH.FeedExporter()
 
     parsedData: list = []
     feedPack: list = []
@@ -131,13 +108,12 @@ if __name__ == "__main__":
     endTime = datetime.now()
     execTime = endTime - startTime
 
-    logEvent(
+    logger.info(
         '*** Execution time: {0} sec {1} msec'
         .format(
-        execTime.seconds,
-        execTime.microseconds
-            ), 
-        'INFO'
+            execTime.seconds,
+            execTime.microseconds
+            )
         )
         
-    logEvent('*** Intelligent harvester get sleep ***', 'INFO')
+    logger.info('*** Intelligent harvester get sleep ***')
