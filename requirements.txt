@@ -1,9 +1,9 @@
-urllib3==1.24.1
-pymisp==2.4.106
-pdfminer3==2018.12.3.0
 xlrd==1.2.0
 setuptools==40.6.2
+pdfminer3==2018.12.3.0
 requests==2.22.0
+pymisp==2.4.106
+urllib3==1.25.3
 IPy==1.00
 OTXv2==1.5.1
 PyYAML==5.1.1
