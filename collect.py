@@ -8,6 +8,7 @@
 #   ------------------------------
 
 import os
+import yaml
 import logging
 import argparse
 import configparser
@@ -20,29 +21,29 @@ logger = LogManager.logEvent(None, __name__)
 def loadConfig(configPath=None):
     """
     Load configuration from file
+    :param configPath: Custom path to configuration file
     """
 
     config = configparser.ConfigParser()
-    try:
-        if configPath == None:
-            if os.path.isfile(os.path.join(os.getcwd(), "settings.conf")):
-                config.read(os.path.join(os.getcwd(), "settings.conf"))
+
+    if configPath == None:
+        if os.path.isfile(os.path.join(os.getcwd(), "config/settings.yaml")):
+            config.read(os.path.join(os.getcwd(), "config/settings.yaml"))
+            logger.info('Config loaded successfully')
+            return config
+        else:
+            logger.error('Configuration file not found')
+            exit()
+    else:
+        with open(configPath, 'r') as stream:
+            try:
+                config = (yaml.safe_load(stream))
                 logger.info('Config loaded successfully')
                 return config
-            else:
-                logger.error('Configuration file not found')
+            except yaml.YAMLError as e:
+                logger.error(e)
+                logger.info('Configuration file not found')
                 exit()
-        else:
-            config.read(configPath)
-            logger.info('Config loaded successfully')
-
-            return config
-
-    except configparser.NoSectionError:
-        logger.info('Configuration file not found or no sections found there')
-        exit()
-    except configparser.NoOptionError:
-        logger.info('No option in configuration file')
 
 
 # Execute main class when script is run
@@ -93,8 +94,13 @@ if __name__ == "__main__":
     # ----------------------------
 
     # Iterate over config section 'feeds' to get all feeds URLs
-    for (feedName, feedUrl) in config.items('osint_feeds'):
+    for feedName, feedUrl in config['COMMUNITY_FEEDS'].items():
         feedPack.append([feedUrl, feedName])
+
+    '''
+    for (feedName, feedUrl) in config['COMMUNITY_FEEDS']:
+        feedPack.append([feedUrl, feedName])
+    '''
 
     # Download all the feeds and parse it
 
@@ -108,8 +114,8 @@ if __name__ == "__main__":
     # -----------------------
 
     mispFeeds = feedCollector.getAllMispAttributes(
-        config.get('MISP_URL', 'MISP_XISAC_URL'), 
-        config.get('MISP_KEY', 'MISP_XISAC_KEY')
+        config['MISP']['X_ISAC_MISP']['X_ISAC_URL'], 
+        config['MISP']['X_ISAC_MISP']['X_ISAC_API_KEY']
         )
     
     # ----------------------------------------------------------------------------
