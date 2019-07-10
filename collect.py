@@ -13,7 +13,7 @@ import argparse
 import configparser
 from datetime import datetime
 from modules.service import LogManager
-from modules import intelligent_harverster as IH
+from modules import intelligent_harverster as Harvester
 
 logger = LogManager.logEvent(None, __name__)
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     args = argparser.parse_args()
 
-    logger.info('*** Intelligence harverster has been started ***')
+    logger.info('*** Intelligence harverster started ***')
 
     if not args.processes:
         args.processes = 1
@@ -81,12 +81,16 @@ if __name__ == "__main__":
 
     config = loadConfig(args.config)
 
-    feedCollector = IH.FeedCollector()
-    feedProcessor = IH.FeedProcessor()
-    feedExporter = IH.FeedExporter()
+    feedCollector = Harvester.FeedCollector()
+    feedProcessor = Harvester.FeedProcessor()
+    feedExporter = Harvester.FeedExporter()
 
     parsedData: list = []
     feedPack: list = []
+
+    # ----------------------------
+    # Step 1: grab community feeds
+    # ----------------------------
 
     # Iterate over config section 'feeds' to get all feeds URLs
     for (feedName, feedUrl) in config.items('osint_feeds'):
@@ -96,12 +100,26 @@ if __name__ == "__main__":
 
     feeds = feedCollector.batchFeedDownload(feedPack, args.processes)
     parsedData = feedProcessor.batchFeedParse(feeds, args.processes)
+    
+    #print(parsedData)
 
-    # Exporting IoCs to the txt or sqlite that user specified by arguments
+    # -----------------------
+    # Step 2: grap MISP feeds
+    # -----------------------
+
+    mispFeeds = feedCollector.getAllMispAttributes(
+        config.get('MISP_URL', 'MISP_XISAC_URL'), 
+        config.get('MISP_KEY', 'MISP_XISAC_KEY')
+        )
+    
+    # ----------------------------------------------------------------------------
+    # Step 3: exporting IoCs to the txt or sqlite that user specified by arguments
+    # ----------------------------------------------------------------------------
     if args.output == 'txt':
         feedExporter.txtExporter('indicators.txt', parsedData)
     elif args.output == 'sqlite':
-        feedExporter.sqliteExporter('iocs.db', parsedData)
+        feedExporter.sqliteExporter('iocs.db', parsedData, mode = 'OSINT')
+        feedExporter.sqliteExporter('misp.db', mispFeeds, mode = 'MISP')
 
 
     # Log results

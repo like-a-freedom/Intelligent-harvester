@@ -25,7 +25,7 @@ import sqlite3
 import argparse
 import requests
 import unicodedata
-import configparser
+
 from IPy import IP
 from OTXv2 import OTXv2
 from modules.service import LogManager
@@ -34,6 +34,7 @@ from collections import defaultdict
 from xlrd import open_workbook, sheet
 from datetime import datetime, timedelta
 from multiprocessing import Pool as ProcessPool
+from modules.integrations import Integrations
 
 '''
 module_path = os.path.abspath(os.getcwd())    
@@ -112,7 +113,7 @@ class FeedCollector():
 
         feedDict = dict()
         
-        feedDict['feedName'] = feedPack[1]
+        feedDict['source'] = feedPack[1]
         feedDict['feedSize'] = feedSize
         feedDict['iocs'] = FeedProcessor.preprocessFeed(self, feed.text)
 
@@ -127,18 +128,9 @@ class FeedCollector():
 
         logger.info('Download started')
 
-        '''
-        Logger.logEvent(
-            self,
-            message='Download started',
-            logLevel = 'INFO'
-            )        
-        '''
-
         if proc == 1:
 
             downloadStartTime = datetime.now()
-
             feedData = []
 
             # Iterate over feed links and download feeds
@@ -187,16 +179,32 @@ class FeedCollector():
 
             return feedData
 
+    def getAllMispAttributes(self, mispUrl, apiKey, iocsOnly:bool=False):
+        '''
+        Get all iocs from MISP instance defined in the config file
+        :param iocsOnly: True means that only IoC will be exctracted from MISP attributes
+        '''
+        Integration = Integrations()
+        print('MISP: ', mispUrl, apiKey)
+        return Integration.getMispAttributes(mispUrl, apiKey, iocsOnly)
+
+    def getLastMispAttributes(self, last: str):
+        '''
+        Get new IoCs published last X days (e.g. '1d' or '14d')
+        '''
+        Integration = Integrations()
+        return Integration.getLastMispAttributes('https://misp.x-isac.org', 'DOnJuKMn9sJ8yKPTSaOQwpFZRjgaWL3ECNC37pq3', '3d')
+
 class FeedProcessor():
     """
-    Feed processing: parsing
+    Feed processing: parsing the feeds
     """
 
     def preprocessFeed(self, feed: str):
         """
         Preprocess feeds: remove comments, delimiters
         :param feedPack: List of IoCs
-        :return: Clean cleaned list of IoCs
+        :return: Clean list of IoCs
         """
 
         # Clearing feed
@@ -225,7 +233,6 @@ class FeedProcessor():
         """
         Parse feed data
         :param feedData: Threat intelligence feed
-        :param feedName: Name of TI feed, just for logging
         """
 
         #TODO: try to use https://github.com/InQuest/python-iocextract instead of own method
@@ -311,7 +318,7 @@ class FeedProcessor():
             '{0} indicators were parsed from feed `{1}` in {2} sec {3} msec'
             .format(
                 totalParsed, 
-                feedData['feedName'], 
+                feedData['source'], 
                 delta.seconds, 
                 delta.microseconds
                 ),
@@ -321,21 +328,21 @@ class FeedProcessor():
 
         parsedDict = defaultdict(defaultdict(list).copy)
 
-        parsedDict['feedName'] = feedData['feedName']
+        parsedDict['source'] = feedData['source']
         parsedDict['totalIocs'] = totalParsed
-        parsedDict['ioc']['ip'] = ip_list
-        parsedDict['ioc']['url'] = url_list
-        parsedDict['ioc']['domain'] = domain_list
-        parsedDict['ioc']['email'] = email_list
-        parsedDict['ioc']['regkey'] = regkey_list
-        parsedDict['ioc']['md5'] = md5_list
-        parsedDict['ioc']['sha1'] = sha1_list
-        parsedDict['ioc']['sha256'] = sha256_list
-        parsedDict['ioc']['sha512'] = sha512_list
-        parsedDict['ioc']['filename'] = filename_list
-        parsedDict['ioc']['filepath'] = filepath_list
-        parsedDict['ioc']['cve'] = cve_list
-        parsedDict['ioc']['yara'] = yara_list
+        parsedDict['iocs']['ip'] = ip_list
+        parsedDict['iocs']['url'] = url_list
+        parsedDict['iocs']['domain'] = domain_list
+        parsedDict['iocs']['email'] = email_list
+        parsedDict['iocs']['regkey'] = regkey_list
+        parsedDict['iocs']['md5'] = md5_list
+        parsedDict['iocs']['sha1'] = sha1_list
+        parsedDict['iocs']['sha256'] = sha256_list
+        parsedDict['iocs']['sha512'] = sha512_list
+        parsedDict['iocs']['filename'] = filename_list
+        parsedDict['iocs']['filepath'] = filepath_list
+        parsedDict['iocs']['cve'] = cve_list
+        parsedDict['iocs']['yara'] = yara_list
 
         return parsedDict
 
@@ -489,37 +496,46 @@ class FeedExporter():
     Feed export methods
     """
 
-    def txtExporter(self, filename: str, iocs: defaultdict):
+    def txtExporter(self, filename: str, iocs: defaultdict, mode: str = 'OSINT'):
         """
         Writes parsed indicators of compromise to the specified txt file
         :param filename: The open file
         :param iocs: IOCs that will be stored, dict
+        :param mode: format of IoCs that will be written ('OSINT' or 'MISP')
         """
+        if mode == 'OSINT':
 
-        totalIOCs: int = 0
-        providersCount: int = 0
+            totalIOCs: int = 0
+            providersCount: int = 0
 
-        with open(filename, 'w', errors="ignore") as file:
+            with open(filename, 'w', errors="ignore") as file:
 
-            for dictItem in iocs:
-                providersCount += 1
-                totalIOCs += int(dictItem['totalIocs'])
-                for key, value in dictItem['ioc'].items():
-                    for item in value:
-                        # Check if dict value is not empty
-                        if item:
-                            file.write('{0}\n'.format(item))
+                for dictItem in iocs:
+                    providersCount += 1
+                    totalIOCs += int(dictItem['totalIocs'])
+                    for key, value in dictItem['iocs'].items():
+                        for item in value:
+                            # Check if dict value is not empty
+                            if item:
+                                file.write('{0}\n'.format(item))
 
-        logger.info(
-            '{0} IOCs from {1} providers successfully exported to text file {2}'
-            .format(
-                totalIOCs,
-                providersCount,
-                filename
-            ),
-        )
+            logger.info('{0} IOCs from {1} providers successfully exported to text file {2}'
+                .format(
+                    totalIOCs,
+                    providersCount,
+                    filename
+                ),
+            )
 
-        file.close()
+            file.close()
+        
+        elif mode == 'MISP':
+
+            with open(filename, 'w', errors="ignore") as file:
+                iocsList = [item['value'] for item in iocs['iocs']]
+                for ioc in iocsList:
+                    file.write(ioc + '\n')
+                file.close()
 
     def csvExporter(self, filename, delimiter='semicolon'):
         """
@@ -535,117 +551,213 @@ class FeedExporter():
             data = [["Name", "Score"], [name, score]]
             writer.writerows(data)
 
-    def sqliteExporter(self, filename: str, iocs: defaultdict):
+    def sqliteExporter(self, filename: str, iocs: defaultdict, mode: str = 'OSINT'):
         """
         Writes parsed indicators of compromise to the specified sqlite file
         :param filename: SQLite file that will be exported to
         :param iocs: IOCs that will be stored in DB
         """
+        if mode == 'OSINT':
+            totalIOCs: int = 0
+            providersCount: int = 0
 
-        totalIOCs: int = 0
-        providersCount: int = 0
+            # Let's to to connect to the specified database
+            try:
+                db = sqlite3.connect(filename, isolation_level=None)
+            except sqlite3.Error as dbErr:
+                logger.error('Error while connecting db: ' + dbErr)
 
-        # Let's to to connect to the specified database
-        try:
-            db = sqlite3.connect(filename, isolation_level=None)
-        except Error as dbErr:
-            logger.error('Error while connecting db: ' + dbErr)
+            # Log that SQLite file found and loaded
+            logger.info('SQLite db named {0} loaded successfully'.format(filename))
+            
+            # Create table in the database
+            try:
+                #db.execute("PRAGMA foreign_keys = ON")
+                db_cursor = db.cursor()
 
-        # Log that SQLite file found and loaded
-        logger.info('SQLite db named {0} loaded successfully'.format(filename))
-        
-        # Create table in the database
-        try:
-            #db.execute("PRAGMA foreign_keys = ON")
-            db_cursor = db.cursor()
+                db_cursor.execute('''CREATE TABLE IF NOT EXISTS indicators 
+                                    (
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        ioc_value TEXT NOT NULL,
+                                        ioc_type TEXT,
+                                        provider_name TEXT,
+                                        created_date TEXT
+                                    )
+                                ''')
+                db.commit()
 
-            db_cursor.execute('''CREATE TABLE IF NOT EXISTS indicators 
+            # Catch error if there is integrity error
+            except sqlite3.Error as tableCreateError:
+                logger.error('Error while try to create table: ' + tableCreateError)
+                db.rollback()
+                os.sys.exit(1)
+            
+            # Truncate table `indicators` if not empty
+
+            try:
+                #db.execute("PRAGMA foreign_keys = ON")
+                db_cursor = db.cursor()
+
+                db_cursor.execute("DELETE FROM indicators;")
+                db_cursor.execute("UPDATE SQLITE_SEQUENCE SET seq = 0 WHERE name = 'indicators';")
+                db_cursor.execute("VACUUM")
+
+                db.commit()
+
+            # Catch error if there is integrity error
+            except sqlite3.IntegrityError as tableTruncateError:
+                logger.error('Error while try to truncate `indicators` table: ' + tableTruncateError)
+                db.rollback()
+                os.sys.exit(1)
+
+            # Iterate over iocs dict and cook SQL INSERTS
+            for dictItem in iocs:
+                
+                providersCount += 1
+                totalIOCs += int(dictItem['totalIocs'])
+
+                for key, value in dictItem['iocs'].items():
+                    for item in value:
+                        if item:
+                        # Just for debug
+                        # print('IoC {0} provider {1}'.format(element, list[2]))
+                        
+                            try:
+                                db.execute(
+                                '''
+                                INSERT OR REPLACE INTO indicators 
                                 (
-                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    ioc_value TEXT NOT NULL,
-                                    ioc_type TEXT,
-                                    provider_name TEXT,
-                                    created_date TEXT
+                                    ioc_value,
+                                    ioc_type,
+                                    provider_name,
+                                    created_date
                                 )
-                            ''')
-            db.commit()
+                                VALUES (?, ?, ?, ?)
+                                ''', 
+                                (
+                                    item,
+                                    key,
+                                    dictItem['source'], 
+                                    datetime.now())
+                                )
 
-        # Catch error if there is integrity error
-        except Error as tableCreateError:
-            logger.error('Error while try to create table: ' + tableCreateError)
-            db.rollback()
-            os.sys.exit(1)
-        
-        # Truncate table `indicators` if not empty
+                            except sqlite3.IntegrityError as sqlIntegrityError:
+                                logger.error(
+                                    'SQLite error: {0}'
+                                    .format(sqlIntegrityError.args[0]),  # column name is not unique
+                                )
+                                db.rollback()
+                                os.sys.exit(1)
 
-        try:
-            #db.execute("PRAGMA foreign_keys = ON")
-            db_cursor = db.cursor()
+                db.commit()
 
-            db_cursor.execute("DELETE FROM indicators;")
-            db_cursor.execute("UPDATE SQLITE_SEQUENCE SET seq = 0 WHERE name = 'indicators';")
-            db_cursor.execute("VACUUM")
-
-            db.commit()
-
-        # Catch error if there is integrity error
-        except sqlite3.IntegrityError as tableTruncateError:
-            logger.error('Error while try to truncate `indicators` table: ' + tableCreateError)
-            db.rollback()
-            os.sys.exit(1)
-
-        # Iterate over iocs dict and cook SQL INSERTS
-        for dictItem in iocs:
-			
-            providersCount += 1
-            totalIOCs += int(dictItem['totalIocs'])
-
-            for key, value in dictItem['ioc'].items():
-                for item in value:
-                    if item:
-                    # Just for debug
-                    # print('IoC {0} provider {1}'.format(element, list[2]))
-                    
-                        try:
-                            db.execute(
-                            '''
-                            INSERT OR REPLACE INTO indicators 
-                            (
-                                ioc_value,
-                                ioc_type,
-                                provider_name,
-                                created_date
-                            )
-                            VALUES (?, ?, ?, ?)
-                            ''', 
-                            (
-                                item,
-                                key,
-                                dictItem['feedName'], 
-                                datetime.now())
-                            )
-
-                        except sqlite3.IntegrityError as sqlIntegrityError:
-                            logger.error(
-                                'SQLite error: {0}'
-                                .format(sqlIntegrityError.args[0]),  # column name is not unique
-                            )
-                            db.rollback()
-                            os.sys.exit(1)
-
-            db.commit()
-
-        # Log if all is okay                    
-        logger.info(
-            '{0} IoCs form {1} providers successfully exported to SQLite database {2}'
-            .format(
-                totalIOCs,
-                providersCount,
-                filename
+            # Log if all is okay                    
+            logger.info(
+                '{0} IoCs from {1} providers successfully exported to SQLite database {2}'
+                .format(
+                    totalIOCs,
+                    providersCount,
+                    filename
+                )
             )
-        )
 
-        db.close()
+            db.close()
+
+        elif mode == 'MISP':
+
+            totalIOCs: int = 0
+
+            # Let's to to connect to the specified database
+            try:
+                db = sqlite3.connect(filename, isolation_level=None)
+            except sqlite3.Error as dbErr:
+                logger.error('Error while connecting db: ' + dbErr)
+
+            # Log that SQLite file found and loaded
+            logger.info('SQLite db named {0} loaded successfully'.format(filename))
+            
+            # Create table in the database
+            try:
+                #db.execute("PRAGMA foreign_keys = ON")
+                db_cursor = db.cursor()
+
+                db_cursor.execute('''
+                                    CREATE TABLE IF NOT EXISTS indicators 
+                                    (
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        ioc_value TEXT NOT NULL,
+                                        ioc_type TEXT,
+                                        provider_name TEXT,
+                                        created_date TEXT
+                                    )
+                                ''')
+                db.commit()
+
+            # Catch error if there is integrity error
+            except sqlite3.Error as tableCreateError:
+                logger.error('Error while try to create table: ' + tableCreateError)
+                db.rollback()
+                os.sys.exit(1)
+            
+            # Truncate table `indicators` if not empty
+
+            try:
+                #db.execute("PRAGMA foreign_keys = ON")
+                db_cursor = db.cursor()
+
+                db_cursor.execute("DELETE FROM indicators;")
+                db_cursor.execute("UPDATE SQLITE_SEQUENCE SET seq = 0 WHERE name = 'indicators';")
+                db_cursor.execute("VACUUM")
+
+                db.commit()
+
+            # Catch error if there is integrity error
+            except sqlite3.IntegrityError as tableTruncateError:
+                logger.error('Error while try to truncate `indicators` table: ' + tableTruncateError)
+                db.rollback()
+                os.sys.exit(1)
+
+            # Iterate over iocs dict and cook SQL INSERTS
+            for dictItem in iocs['iocs']:
+                try:
+                    db.execute(
+                    '''
+                    INSERT OR REPLACE INTO indicators 
+                    (
+                        ioc_value,
+                        ioc_type,
+                        provider_name,
+                        created_date
+                    )
+                    VALUES (?, ?, ?, ?)
+                    ''', 
+                    (
+                        dictItem['value'],
+                        dictItem['type'],
+                        iocs['source'], 
+                        dictItem['timestamp'])
+                    )
+
+                except sqlite3.IntegrityError as sqlIntegrityError:
+                    logger.error(
+                        'SQLite error: {0}'
+                        .format(sqlIntegrityError.args[0]),  # column name is not unique
+                    )
+                    db.rollback()
+                    os.sys.exit(1)
+
+                db.commit()
+
+            # Log if all is okay                    
+            logger.info(
+                '{0} IoCs successfully exported to SQLite database {1}'
+                .format(
+                    iocs['totalIocs'],
+                    filename
+                )
+            )
+
+            db.close()
 
     def elasticExporter(self, host, indice, iocs):
         """
