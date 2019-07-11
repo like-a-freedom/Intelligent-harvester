@@ -254,7 +254,6 @@ class Integrations():
         
         for key, value in iocTypes.items():
             if str(iocType) == str(key):
-                print('Type ', iocType, ' converted to ', value)
                 return str(value)
         
         return iocType
