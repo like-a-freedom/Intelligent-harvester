@@ -75,7 +75,7 @@ if __name__ == "__main__":
         args.processes = 1
         print('Running in 1 proccess')
     elif args.processes > 1:
-        print('Running in %d proccesses' % args.processes)
+        print('Running in {0} proccesses'.format(args.processes))
         logger.info('Running in {0} proccesses'.format(args.processes))
 
     startTime = datetime.now()
@@ -88,39 +88,37 @@ if __name__ == "__main__":
 
     parsedData: list = []
     feedPack: list = []
+    misps: list = []
+    mispFeeds: list = []
 
     # ----------------------------
     # Step 1: grab community feeds
     # ----------------------------
 
-    # Iterate over config section 'feeds' to get all feeds URLs
+    # Iterate over config sections to get all feeds URL and credentials
+
     for feedName, feedUrl in config['COMMUNITY_FEEDS'].items():
         feedPack.append([feedUrl, feedName])
 
-    '''
-    for (feedName, feedUrl) in config['COMMUNITY_FEEDS']:
-        feedPack.append([feedUrl, feedName])
-    '''
+    for items in config['MISP'].items():
+        for item in items:
+            if type(item) == dict:
+                misps.append(item)
 
     # Download all the feeds and parse it
 
     feeds = feedCollector.batchFeedDownload(feedPack, args.processes)
     parsedData = feedProcessor.batchFeedParse(feeds, args.processes)
     
-    #print(parsedData)
-
     # -----------------------
     # Step 2: grap MISP feeds
     # -----------------------
 
-    mispFeeds = feedCollector.getAllMispAttributes(
-        config['MISP']['X_ISAC_MISP']['X_ISAC_URL'], 
-        config['MISP']['X_ISAC_MISP']['X_ISAC_API_KEY']
-        )
+    mispFeeds = feedCollector.getAllMispAttributes(misps, args.processes)
     
-    # ----------------------------------------------------------------------------
-    # Step 3: exporting IoCs to the txt or sqlite that user specified by arguments
-    # ----------------------------------------------------------------------------
+    # --------------------------------------------------------------------------------
+    # Step 3: exporting IoCs to the txt or sqlite that user has specified in arguments
+    # --------------------------------------------------------------------------------
     if args.output == 'txt':
         feedExporter.txtExporter('indicators.txt', parsedData)
     elif args.output == 'sqlite':

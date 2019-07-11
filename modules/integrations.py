@@ -62,7 +62,7 @@ class Integrations():
 
         return otxDict
 
-    def getLastMispAttributes(self, url: str, apiKey: str, last: int) -> dict:
+    def getLastMispAttributes(self, mispName: str, url: str, apiKey: str, last: int) -> dict:
         '''
         Receive events from MISP instance, grab all the indicators
         from fetched events
@@ -86,9 +86,10 @@ class Integrations():
                 endTime = datetime.now()
                 delta = endTime - startTime
 
-                logger.logEvent().info('MISP integration finished. Obtained {0} IoCs in {1} sec {2} msec'
+                logger.logEvent().info('MISP integration finished. Obtained {0} IoCs from `{1}` in {2} sec {3} msec'
                     .format(
                         iocs['totalIocs'],
+                        mispName,
                         delta.seconds,
                         delta.microseconds,
                         ),
@@ -98,25 +99,30 @@ class Integrations():
 
             return iocs
 
-    def getMispAttributes(self, url: str, apiKey: str, iocsOnly: bool = False) -> dict:
+    def getMispAttributes(self, mispCredentials: dict, iocsOnly: bool = False) -> dict:
         '''
         Receive all MISP attributes with pagination
         :param url: MISP instance URL
         :param key: MISP API token
         '''
-        MISP = PyMISP(url, apiKey, False, 'json')
+        MISP = PyMISP(
+            mispCredentials['URL'],
+            mispCredentials['API_KEY'],
+            False,
+            'json'
+            )
 
-        logger.logEvent().info("MISP integration started")
+        logger.logEvent().info(mispCredentials['MISP_NAME'] + " integration started")
 
         limitPerPage: int = 1000
         totalIocs: int = 0
         pageNumber: int = 1
-        iocsDict = {}
-        iocs = []
+        iocsDict: list = {}
+        iocs: list = []
         startTime = datetime.now()
         
         while True:
-            attributes = MISP.search(controller = 'attributes', page = pageNumber, limit = limitPerPage, last='10d')
+            attributes = MISP.search(controller = 'attributes', page = pageNumber, limit = limitPerPage)
             if attributes:
                 if 'response' in attributes:
                     attrs = self.__mispAttributesProcess(attributes['response'])
@@ -128,8 +134,9 @@ class Integrations():
                             else:
                                 iocs.append(item)
 
-                        print('Fetching page: {0}. Got {1} IoCs'
+                        print('{0}. Fetching page: {1}. Got {2} IoCs'
                             .format(
+                                mispCredentials['MISP_NAME'],
                                 pageNumber,
                                 len(attrs)
                             )
@@ -138,9 +145,17 @@ class Integrations():
                         totalIocs += len(attrs)
 
                     elif len(attrs) < limitPerPage:
+                        
+                        for item in attrs:
+                            if iocsOnly == True:
+                                iocs.append(item['value'])
+                            else:
+                                iocs.append(item)
+
                         totalIocs += len(attrs)
-                        print('Fetching page: {0}. Got {1} IoCs'
+                        print('{0}. Fetching page: {1}. Got {2} IoCs'
                             .format(
+                                mispCredentials['MISP_NAME'],
                                 pageNumber,
                                 len(attrs)
                             )
@@ -148,16 +163,17 @@ class Integrations():
                         endTime = datetime.now()
                         delta = endTime - startTime
                         logger.logEvent().info(
-                            'MISP integration finished. Obtained {0} IoCs in {1} sec {2} msec'
+                            'MISP integration finished. Obtained {0} IoCs from `{1}` in {2} sec {3} msec'
                             .format(
                                 totalIocs,
+                                mispCredentials['MISP_NAME'],
                                 delta.seconds,
                                 delta.microseconds,
                             ),
                         )
                         break
 
-        iocsDict['source'] = 'X-ISAC MISP'
+        iocsDict['source'] = mispCredentials['MISP_NAME']
         iocsDict['totalIocs'] = totalIocs
         iocsDict['iocs'] = iocs
 
@@ -225,6 +241,7 @@ class Integrations():
         Converts MISP IOC types to common types
         :param iocType: MISP ioc type
         '''
+
         iocTypes = {
             'ip-src': 'ip',
             'ip-dst': 'ip',
@@ -234,12 +251,13 @@ class Integrations():
             'email-dst': 'email',
             'vulnerability': 'cve'
         }
-
-        for type in iocTypes:
-            if str(iocType) == type:
-                return iocTypes[type]
-            else:
-                return iocType
+        
+        for key, value in iocTypes.items():
+            if str(iocType) == str(key):
+                print('Type ', iocType, ' converted to ', value)
+                return str(value)
+        
+        return iocType
 
 
     #TODO: make custom modules-parser plugins to parse specific feed

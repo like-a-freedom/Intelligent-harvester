@@ -119,19 +119,19 @@ class FeedCollector():
 
         return feedDict
 
-    def batchFeedDownload(self, feedPack: list, proc: int) -> list:
+    def batchFeedDownload(self, feedPack: list, procs: int) -> list:
         """
         Downloads collection of feeds in parallel processes
         :param feedsPack: Feed data
-        :param proc: Number of parallel processes
+        :param proc: Number of parallel processes to get data over different feeds
         """
 
         logger.info('Download started')
 
-        if proc == 1:
+        if procs == 1:
 
             downloadStartTime = datetime.now()
-            feedData = []
+            feedData: list = []
 
             # Iterate over feed links and download feeds
             for link in feedPack:
@@ -142,13 +142,14 @@ class FeedCollector():
             
             return feedData
 
-        else:
-            
+        elif procs > 1:
+
             # Log download start time
             downloadStartTime = datetime.now()
+            feedData: list = []
 
             # Define process pool and start download feeds from feedPack in parallel processes
-            pool = ProcessPool(proc)
+            pool = ProcessPool(procs)
 
             # Download feeds in a number of separate processes
             feedData = pool.map(self.getFeed, feedPack)
@@ -179,21 +180,38 @@ class FeedCollector():
 
             return feedData
 
-    def getAllMispAttributes(self, mispUrl, apiKey, iocsOnly:bool=False):
+    def getAllMispAttributes(self, misps: list, procs: int, iocsOnly: bool = False):
         '''
         Get all iocs from MISP instance defined in the config file
+        :param misps: MISP configuration data
+        :param procs: Number of parallel processes to get data from different MISPs
         :param iocsOnly: True means that only IoC will be exctracted from MISP attributes
         '''
         Integration = Integrations()
-        print('MISP: ', mispUrl, apiKey)
-        return Integration.getMispAttributes(mispUrl, apiKey, iocsOnly)
 
-    def getLastMispAttributes(self, last: str):
+        if len(misps) == 1:
+            for misp in misps:
+                return Integration.getMispAttributes(misp, iocsOnly)
+        elif len(misps) > 1:
+            mispData: list = []
+
+            pool = ProcessPool(procs)
+            with ProcessPool(processes=procs) as pool:
+                #TODO: support `iocsOnly argument`
+                mispData = pool.map(Integration.getMispAttributes, misps)
+                pool.close()
+                pool.join()
+
+            return mispData
+            
+    def getLastMispAttributes(self, misps: list, last: str):
         '''
         Get new IoCs published last X days (e.g. '1d' or '14d')
         '''
         Integration = Integrations()
-        return Integration.getLastMispAttributes('https://misp.x-isac.org', 'DOnJuKMn9sJ8yKPTSaOQwpFZRjgaWL3ECNC37pq3', '3d')
+
+        for misp in misps:
+            return Integration.getLastMispAttributes(misp['MISP_NAME'], misp['URL'], misp['API_KEY'], last)
 
 class FeedProcessor():
     """
@@ -551,7 +569,7 @@ class FeedExporter():
             data = [["Name", "Score"], [name, score]]
             writer.writerows(data)
 
-    def sqliteExporter(self, filename: str, iocs: defaultdict, mode: str = 'OSINT'):
+    def sqliteExporter(self, filename: str, iocs: list, mode: str = 'OSINT'):
         """
         Writes parsed indicators of compromise to the specified sqlite file
         :param filename: SQLite file that will be exported to
@@ -718,44 +736,45 @@ class FeedExporter():
                 os.sys.exit(1)
 
             # Iterate over iocs dict and cook SQL INSERTS
-            for dictItem in iocs['iocs']:
-                try:
-                    db.execute(
-                    '''
-                    INSERT OR REPLACE INTO indicators 
-                    (
-                        ioc_value,
-                        ioc_type,
-                        provider_name,
-                        created_date
-                    )
-                    VALUES (?, ?, ?, ?)
-                    ''', 
-                    (
-                        dictItem['value'],
-                        dictItem['type'],
-                        iocs['source'], 
-                        dictItem['timestamp'])
-                    )
+            for iocPack in iocs:
+                for dictItem in iocPack['iocs']:
+                    try:
+                        db.execute(
+                        '''
+                        INSERT OR REPLACE INTO indicators 
+                        (
+                            ioc_value,
+                            ioc_type,
+                            provider_name,
+                            created_date
+                        )
+                        VALUES (?, ?, ?, ?)
+                        ''', 
+                        (
+                            dictItem['value'],
+                            dictItem['type'],
+                            iocPack['source'], 
+                            dictItem['timestamp'])
+                        )
 
-                except sqlite3.IntegrityError as sqlIntegrityError:
-                    logger.error(
-                        'SQLite error: {0}'
-                        .format(sqlIntegrityError.args[0]),  # column name is not unique
+                    except sqlite3.IntegrityError as sqlIntegrityError:
+                        logger.error(
+                            'SQLite error: {0}'
+                            .format(sqlIntegrityError.args[0]),  # column name is not unique
+                        )
+                        db.rollback()
+                        os.sys.exit(1)
+
+                    db.commit()
+
+                # Log if all is okay                    
+                logger.info(
+                    '{0} IoCs successfully exported to SQLite database {1}'
+                    .format(
+                        iocPack['totalIocs'],
+                        filename
                     )
-                    db.rollback()
-                    os.sys.exit(1)
-
-                db.commit()
-
-            # Log if all is okay                    
-            logger.info(
-                '{0} IoCs successfully exported to SQLite database {1}'
-                .format(
-                    iocs['totalIocs'],
-                    filename
                 )
-            )
 
             db.close()
 
