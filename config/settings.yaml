@@ -1,0 +1,212 @@
+COMMUNITY_FEEDS:
+  # BOTVRIJ.EU feed
+  # Feed can be with context as: http://www.botvrij.eu/data/ioclist.ip-dst
+  # or without (with `raw` postfix): http://www.botvrij.eu/data/ioclist.ip-dst.raw
+  botvrijIpDst: http://www.botvrij.eu/data/ioclist.ip-dst.raw
+  botvrijDomain: http://www.botvrij.eu/data/ioclist.domain.raw
+  botvrijUrl: http://www.botvrij.eu/data/ioclist.url.raw
+  botvrijFilename: http://www.botvrij.eu/data/ioclist.filename.raw
+  botvrijMD5: http://www.botvrij.eu/data/ioclist.md5.raw
+  botvrijSHA1: http://www.botvrij.eu/data/ioclist.sha1.raw
+  botvrijSHA256: http://www.botvrij.eu/data/ioclist.sha256.raw
+  botvrijEmailSrc: http://www.botvrij.eu/data/ioclist.email-src.raw
+  botvrijRegkey: http://www.botvrij.eu/data/ioclist.regkey.raw
+
+  # SANS feeds
+  SANSHighSuspiciousDomains: https://isc.sans.edu/feeds/suspiciousdomains_High.txt
+  SANSMedSuspiciousDomains: https://isc.sans.edu/feeds/suspiciousdomains_Medium.txt
+  SANSLowSuspiciousDomains: https://isc.sans.edu/feeds/suspiciousdomains_Low.txt
+  SANSTorExitNodes: https://isc.sans.edu/feeds/topips.txt
+
+  # Ramsomware tracker (Abuse Ch)
+  ransomwaretrackerAbuseChFeed: https://ransomwaretracker.abuse.ch/feeds/csv/
+  ransomwaretrackerAbuseChUrlBL: https://ransomwaretracker.abuse.ch/downloads/RW_URLBL.txt
+  ransomwaretrackerAbuseChIpBL: https://ransomwaretracker.abuse.ch/downloads/RW_IPBL.txt
+  ransomwaretrackerAbuseChDomainsBL: https://ransomwaretracker.abuse.ch/downloads/RW_DOMBL.txt
+
+  # Zeus tracker
+  zeustrackerAbuseChDomainsBL: https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist
+  zeustrackerAbuseChIpBL: https://zeustracker.abuse.ch/blocklist.php?download=ipblocklist
+  zeustrackerAbuseCompromisedURLs: https://zeustracker.abuse.ch/blocklist.php?download=compromised
+
+  # Emerging threats
+  emergingThreatsBL: https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt
+  emergingThreatsCompromisedIPs: https://rules.emergingthreats.net/blockrules/compromised-ips.txt
+
+  # Feodo tracker
+  feodotrackerIpBL: https://feodotracker.abuse.ch/downloads/ipblocklist.txt
+  feodotrackerMalwareHashes: https://feodotracker.abuse.ch/downloads/malware_hashes.txt
+
+  # Bambenek feeds
+  bambenekIpFeed: https://osint.bambenekconsulting.com/feeds/c2-ipmasterlist.txt
+  bambenekDomainFeed: http://osint.bambenekconsulting.com/feeds/c2-dommasterlist.txt
+  bambenekCnC: http://osint.bambenekconsulting.com/feeds/c2-masterlist.txt
+
+  # Italy CERT
+  italyCERTDomains: https://infosec.cert-pa.it/analyze/listdomains.txt
+  italyCERTURLs: https://infosec.cert-pa.it/analyze/listurls.txt
+  italyCERTIPs: https://infosec.cert-pa.it/analyze/listip.txt
+
+  # Austrian CERT
+  austrianCERT: https://www.cert.at/static/downloads/data/conficker/all_domains.txt
+
+  ipSpamList: http://www.ipspamlist.com/public_feeds.csv
+  malSiloUrlFeed: https://malsilo.gitlab.io/feeds/dumps/url_list.txt
+  malSiloIpFeed: https://malsilo.gitlab.io/feeds/dumps/ip_list.txt
+  miraiSecurity: https://mirai.security.gives/data/ip_list.txt
+
+  # Threat Crowd feed
+  threatCrowdDomains: https://www.threatcrowd.org/feeds/domains.txt
+  threatCrowdIPs: https://www.threatcrowd.org/feeds/ips.txt
+  threatCrowdHashes: https://www.threatcrowd.org/feeds/hashes.txt
+  dnsBhDDNS: http://dns-bh.sagadc.org/dynamic_dns.txt
+
+  # Cybercure feed
+  cybercureIpFeed: http://api.cybercure.ai/feed/get_ips?type=csv
+  cyberCureCsvFeed: http://api.cybercure.ai/feed/get_url?type=csv
+  cyberCureHashFeed: http://api.cybercure.ai/feed/get_hash?type=csv
+  cybercureBadIPs: http://api.cybercure.ai/feed/get_ips?type=csv
+  cybercrimeTracker: http://cybercrime-tracker.net/all.php
+
+  # Dataplane feeds
+  datapladataplaneVncRFB: https://dataplane.org/vncrfb.txt
+  dataplaneSSHClientConnections: https://dataplane.org/sshclient.txt
+  dataplaneSshpWAUTH: https://dataplane.org/sshpwauth.txt
+  dataplaneSipInvitations: https://dataplane.org/sipinvitation.txt
+  dataplaneSipQuery: https://dataplane.org/sipquery.txt
+  dataplaneSipRegistration: https://dataplane.org/sipregistration.txt
+  dataplaneDnsRecursionDesired: https://dataplane.org/dnsrd.txt
+  dataplaneDnsRecursionDesiredInAny: https://dataplane.org/dnsrdany.txt
+  dataplaneDnsCHTXT: https://dataplane.org/dnsversion.txt
+
+  # Blocklist DE feeds
+  blocklistDeBots: http://www.blocklist.de/lists/bots.txt
+  blocklistDeEmails: http://www.blocklist.de/lists/email.txt
+  blocklistDeFTPs: http://www.blocklist.de/lists/ftp.txt
+  blocklistDeIMAPs: http://www.blocklist.de/lists/imap.txt
+  blocklistDeIRCBots: http://www.blocklist.de/lists/ircbot.txt
+  blocklistDePOP3: http://www.blocklist.de/lists/pop3.txt
+  blocklistDePostfix: http://www.blocklist.de/lists/postfix.txt
+  blocklistDeProFTPd: http://www.blocklist.de/lists/proftpd.txt
+  blocklistDeSIP: http://www.blocklist.de/lists/sip.txt
+  blocklistDeSSH: http://www.blocklist.de/lists/ssh.txt
+  blocklistDeCourierPOP3: http://www.blocklist.de/lists/courierpop3.txt
+  blocklistDeCourierIMAP: http://www.blocklist.de/lists/courierimap.txt
+  blocklistDeAsterisk: http://www.blocklist.de/lists/asterisk.txt
+  blocklistDeApache: http://www.blocklist.de/lists/apache.txt
+
+  # Firehol feeds
+  fireholBitcoinNodes: https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/bitcoin_nodes_1d.ipset
+  fireholBotScout: https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/botscout_1d.ipset
+  fireholCruzitWebAttacks: https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/cruzit_web_attacks.ipset
+  fireholMalwareDomainList: https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/malwaredomainlist.ipset
+  fireholBL: https://raw.githubusercontent.com/ktsaou/blocklist-ipsets/master/firehol_level1.netset
+  fireholProxyBL: https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/proxylists_1d.ipset
+  fireholProxyRSS: https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/proxyrss_1d.ipset
+  fireholProxySpy: https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/proxyspy_1d.ipset
+  fireholWebProxy: https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/ri_web_proxies_30d.ipset
+  fireholSocksProxy: https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/socks_proxy_7d.ipset
+  fireholSSLProxy: https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/sslproxies_1d.ipset
+
+  # Nothink feeds
+  nothinkSshBL: http://www.nothink.org/blacklist/blacklist_ssh_day.txt
+  nothinkDnsMalwareBL: http://www.nothink.org/blacklist/blacklist_malware_dns.txt
+  nothinkHttpMalwareBL: http://www.nothink.org/blacklist/blacklist_malware_http.txt
+  nothinkIrcMalwareBL: http://www.nothink.org/blacklist/blacklist_malware_irc.txt
+
+  # Checkpoint OSINT feeds
+  checkpointIP: https://secureupdates.checkpoint.com/IP-list/IP-blacklist.txt
+  checkpointTOR: https://secureupdates.checkpoint.com/IP-list/TOR.txt
+
+  # Cisco Talos feed
+  talosintelFeed: http://www.talosintelligence.com/feeds/ip-filter.blf
+  talosIpBlacklist: http://www.talosintelligence.com/documents/ip-blacklist
+
+  # Rescure feeds
+  REScureCtiMaliciousIpFeed: https://rescure.fruxlabs.com/rescure_blacklist.txt
+  REScureCtiMaliciousDomainFeed: https://rescure.fruxlabs.com/rescure_domain_blacklist.txt
+
+  # Binary defence feeds
+  binaryDefenceIpBanlist: https://www.binarydefense.com/banlist.txt
+
+  # Netlab feed
+
+  netlabMagnitude: http://data.netlab.360.com/feeds/ek/magnitude.txt
+  netlabHajimeScanner: http://data.netlab.360.com/feeds/hajime-scanner/bot.list
+
+  # Other feeds
+  someoneOnPastebin: http://pastebin.com/raw/yKSQd5Z5
+  malc0deFeed: http://malc0de.com/bl/IP_Blacklist.txt
+  threatlistFeed: https://threatlists.intercept.sh/threatlist_7d_weekly_sample.csv
+  mdlIpFeed: http://www.malwaredomainlist.com/hostslist/ip.txt
+  mdlDomainFeed: http://www.malwaredomainlist.com/hostslist/hosts.txt
+  tornodesFeed: https://check.torproject.org/exit-addresses
+  coinBlockerList: https://gitlab.com/ZeroDot1/CoinBlockerLists/raw/master/list.txt?inline=false
+  coinBlockerBrowserList: https://gitlab.com/ZeroDot1/CoinBlockerLists/raw/master/list_browser.txt?inline=false
+  coinBlockerMiningServers: https://gitlab.com/ZeroDot1/CoinBlockerLists/raw/master/MiningServerIPList.txt?inline=false
+  diamondFoxPanels: https://raw.githubusercontent.com/pan-unit42/iocs/master/diamondfox/diamondfox_panels.txt
+  charleysTheHayles: http://charles.the-haleys.org/ssh_dico_attack_hdeny_format.php/hostsdeny.txt
+  panwdblAppspot: https://panwdbl.appspot.com/lists/mdl.txt
+  DdnsDomains: http://mirror1.malwaredomains.com/files/dynamic_dns.txt
+  marcoramilIPs: https://malware.army/api/honey_iplist
+  greensnow: https://blocklist.greensnow.co/greensnow.txt
+  vmxBadHosts: http://vmx.yourcmc.ru/BAD_HOSTS.IP4
+  malwareDomainsDotCom: http://mirror1.malwaredomains.com/files/justdomains
+  openPhish: https://openphish.com/feed.txt
+  phishTank: http://data.phishtank.com/data/online-valid.csv
+  sblamDotCom: https://sblam.com/blacklist.txt
+  danUkAllTorNodes: https://www.dan.me.uk/torlist/
+  danUkExitTorNodes: https://www.dan.me.uk/torlist/?exit
+  vxVaultURLs: http://vxvault.net/URL_List.php
+  ddnsProvidersList: http://dns-bh.sagadc.org/dynamic_dns.txt
+  cinscoreFeed: http://cinsscore.com/list/ci-badguys.txt
+  POP3GropersFeed: https://home.nuug.no/~peter/pop3gropers.txt
+  dshield: https://www.dshield.org/ipsascii.html
+  dangerRulezSk: http://danger.rulez.sk/projects/bruteforceblocker/blist.php
+  dnsShDDNS: http://dns-bh.sagadc.org/dynamic_dns.txt
+  sblam: https://sblam.com/blacklist.txt
+  joeWeinDomainBL: http://www.joewein.net/dl/bl/dom-bl-base.txt
+  disconnectMeMalvertising: https://disconnect.me/lists/malvertising
+  disconnectMeMalwareFilter: https://disconnect.me/lists/malwarefilter
+  myIpMsBL: https://myip.ms/files/blacklist/htaccess/latest_blacklist.txt
+  targetedThreatsBotherder: https://raw.githubusercontent.com/botherder/targetedthreats/master/targetedthreats.csv
+  futpibGithubBL: https://raw.githubusercontent.com/futpib/policeman-rulesets/master/examples/simple_domains_blacklist.txt
+  malwareEmailsGithub: https://raw.githubusercontent.com/WSTNPHX/scripts-n-tools/master/malware-email-addresses.txt
+  blutmagieTOR: https://torstatus.blutmagie.de/ip_list_all.php/Tor_ip_list_ALL.csv
+  techhelplist: https://techhelplist.com/maltlqr/reports/dyreza.txt
+  AbuseChSSLBL: https://sslbl.abuse.ch/blacklist/sslipblacklist.csv
+  BBScanDNS: https://gist.githubusercontent.com/BBcan177/4a8bf37c131be4803cb2/raw
+  BBScanIP: https://gist.githubusercontent.com/BBcan177/bf29d47ea04391cb3eb0/raw/
+  darklistDe: http://www.darklist.de/raw.php
+  stDominicDropIpv4: https://threatintel.stdominics.sa.edu.au/droplist_high_confidence.txt
+  urlVirMalwareIP: http://www.urlvir.com/export-ip-addresses/
+  urlVirMalwareDomains: http://www.urlvir.com/export-hosts/
+  disconnectMesimpleMalwareList: https://s3.amazonaws.com/lists.disconnect.me/simple_malware.txt
+  dnsNotrackingDomains: https://raw.githubusercontent.com/notracking/hosts-blocklists/master/domains.txt
+  dnsNotrackingHostnames: https://raw.githubusercontent.com/notracking/hosts-blocklists/master/hostnames.txt
+
+  # Large feeds below
+
+  otxReputationData: http://reputation.alienvault.com/reputation.data
+  urlHausAbuseCh: https://urlhaus.abuse.ch/downloads/csv/
+  urlHausAbuseChPayloadsURL: https://urlhaus.abuse.ch/downloads/payloads/
+  Neo23x0: https://raw.githubusercontent.com/Neo23x0/signature-base/master/iocs/otx-c2-iocs.txt
+  bambenekDGA: http://osint.bambenekconsulting.com/feeds/dga-feed.txt
+  netlab360DGA: http://data.netlab.360.com/feeds/dga/dga.txt
+  SANSIP: https://isc.sans.edu/ipsascii.html
+
+  #dragonResearchGroupSSHPWAUTH: https://dragonresearchgroup.org/insight/sshpwauth.txt
+  #dragonResearchGroupVNCProbe: https://dragonresearchgroup.org/insight/vncprobe.txt
+
+VENDOR_FEEDS:
+  OTX:
+    #OTX_URL:
+    #OTX_API_KEY:
+  XFORCE:
+    #XFORCE_URL:
+    #XFORCE_API:
+
+MISP:
+  X_ISAC_MISP:
+    #X_ISAC_URL:
+    #X_ISAC_API_KEY:
