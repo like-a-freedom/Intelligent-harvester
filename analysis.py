@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import matplotlib.pyplot as plt
-from modules.analyzer import build_corr
+from modules.correlation import build_corr
 from modules.sqlite import sq3_connect
 import numpy as np
 import os.path
