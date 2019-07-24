@@ -197,6 +197,9 @@ COMMUNITY_FEEDS:
 
   #dragonResearchGroupSSHPWAUTH: https://dragonresearchgroup.org/insight/sshpwauth.txt
   #dragonResearchGroupVNCProbe: https://dragonresearchgroup.org/insight/vncprobe.txt
+  # TODO: add from https://osint.digitalside.it
+  # TODO: add from https://www.bountysource.com/issues/27821354-contribute-feeds-list
+  # TODO: add from https://github.com/certtools/intelmq/issues/384
 
 VENDOR_FEEDS:
   OTX:

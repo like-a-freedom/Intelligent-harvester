@@ -6,9 +6,9 @@
 #   ------------------------------
 
 import json
+import timeit
 from OTXv2 import OTXv2
 from pymisp import PyMISP
-from sys import getsizeof
 from collections import defaultdict
 from modules.service import LogManager
 from datetime import datetime, timedelta
@@ -23,7 +23,7 @@ logger.logEvent(__name__)
 
 class Integrations():
 
-    def getOtxPulse(self, days: int, apiKey: str) -> dict:
+    def getOtx(self, days: int, apiKey: str) -> dict:
         """
         Receive the IoCs from Alienvault OTX
         :param days: How many days the reslts from the feed can be
@@ -33,10 +33,18 @@ class Integrations():
         otx = OTXv2(apiKey)
 
         try:
+            logger.logEvent().info("OTX integration started")
+            startTime = datetime.now()
             pulses = otx.getsince((datetime.now() - timedelta(days=days)).isoformat())
             #pulses = otx.getall()
-            
-            print("OTX feed download complete: %s events received" % len(pulses))
+            otx.get
+            execTime = datetime.now() - startTime
+            print("OTX feed download complete in {0}: {1} events received"
+                .format(
+                    execTime,
+                    len(pulses)                 
+                )
+            )
             logger.logEvent().info('OTX feed download complete: %s events received' % len(pulses))
         except Exception as otxDownloadFailedError:
             logger.logEvent().error('OTX feed download failed: ' % otxDownloadFailedError)
@@ -48,8 +56,8 @@ class Integrations():
             'domain': 'domain',
             'FileHash-SHA1': 'sha1',
             'FileHash-SHA256': 'sha256',
-            'FileHash-MD5': 'md5'
-            #'YARA': 'yara',
+            'FileHash-MD5': 'md5',
+            'YARA': 'yara'
             }
         
         otxDict = defaultdict(list)
@@ -160,16 +168,15 @@ class Integrations():
                                 len(attrs)
                             )
                         )
-                        endTime = datetime.now()
-                        delta = endTime - startTime
+                        execTime = datetime.now() - startTime
+                        
                         logger.logEvent().info(
-                            'MISP integration finished. Obtained {0} IoCs from `{1}` in {2} sec {3} msec'
+                            'MISP integration finished. Obtained {0} IoCs from `{1}` in {2}'
                             .format(
                                 totalIocs,
                                 mispCredentials['MISP_NAME'],
-                                delta.seconds,
-                                delta.microseconds,
-                            ),
+                                execTime
+                            )
                         )
                         break
 
