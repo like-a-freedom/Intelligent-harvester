@@ -1,3 +1,39 @@
-*.pyc
-__pycache__
-*.db
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Other stuff
+*.code-workspace
+.vscode/*
+data/
+ioc.db
+iocs.db
+iocs.db-journal
+harvester.log
+misp.db
+indicators.txt
+indicators.large.4m.txt
+iocs.large.4m.db
+.gitignore
+.DS_Store
+settings.check.conf
+feed.txt
+feedImporter.py
+settings.mini.yaml
+settings.check.yaml
+OTX.db
+OTX.txt
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
