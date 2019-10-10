@@ -62,7 +62,7 @@ if __name__ == "__main__":
         '--processes',
         type=int,
         dest='processes',
-        default='auto',
+        default=0,
         help='Number of processes for dowload feeds, or you can use `auto`'
         )
     argparser.add_argument(
@@ -76,13 +76,13 @@ if __name__ == "__main__":
 
     logger.logEvent().info('*** Intelligence harverster started ***')
 
-    if not args.processes:
-        args.processes = cpu_count * 1.5
-        print('Running in {0} proccesses').format(args.processes)
-        logger.logEvent().info('Running in {0} proccesses'.format(args.processes))
+    if args.processes == 0:
+        args.processes = int(cpu_count() * 1.5)
+        print('Running in {0} proccesses'.format(args.processes))
+        logger.logEvent().info('Running in {0} processes'.format(args.processes))
     elif args.processes > 1:
         print('Running in {0} proccesses'.format(args.processes))
-        logger.logEvent().info('Running in {0} proccesses'.format(args.processes))
+        logger.logEvent().info('Running in {0} proccsses'.format(args.processes))
 
     startTime = datetime.now()
 
