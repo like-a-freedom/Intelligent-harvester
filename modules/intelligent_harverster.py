@@ -657,7 +657,8 @@ class FeedExporter():
                                     item,
                                     key,
                                     dictItem['source'], 
-                                    datetime.now())
+                                    datetime.now()
+                                )
                                 )
 
                             except sqlite3.IntegrityError as sqlIntegrityError:

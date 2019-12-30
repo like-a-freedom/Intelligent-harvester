@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #   ------------------------------
 #   Created by Anton Solovey, 2019
-#   This module implements fetch methods from various custom TI providers
+#   This module implements some of service functions
 #   ------------------------------
 
 import logging
