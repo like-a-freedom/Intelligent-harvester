@@ -1,4 +1,4 @@
-__author__ = 'http://stackoverflow.com/questions/26413216/pdfminer3k-has-no-method-named-create-pages-in-pdfpage'
+__author__ = "http://stackoverflow.com/questions/26413216/pdfminer3k-has-no-method-named-create-pages-in-pdfpage"
 #
 # Used only when extracting indicators from PDF formatted files
 #
@@ -11,13 +11,13 @@ from pdfminer3.layout import LAParams, LTTextBox, LTTextLine
 
 
 def convert_pdf_to_txt(path):
-    fp = open(path, 'rb')
-    txt = ''
+    fp = open(path, "rb")
+    txt = ""
     parser = PDFParser(fp)
     doc = PDFDocument()
     parser.set_document(doc)
     doc.set_parser(parser)
-    doc.initialize('')
+    doc.initialize("")
     rsrcmgr = PDFResourceManager()
     laparams = LAParams()
     device = PDFPageAggregator(rsrcmgr, laparams=laparams)
@@ -29,4 +29,4 @@ def convert_pdf_to_txt(path):
         for lt_obj in layout:
             if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
                 txt += lt_obj.get_text()
-    return(txt)
+    return txt

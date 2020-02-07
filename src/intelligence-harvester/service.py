@@ -27,13 +27,13 @@ def logEvent(moduleName: str) -> object:
         return logger
 
 
-def loadConfig(configPath: str) -> object:
+def loadConfig(configPath: str) -> object or None:
     """
     Load configuration from file
     :param configPath: Custom path to configuration file
     """
 
-    logger = logEvent(__name__)
+    logger = logEvent(__file__)
     workdir = os.path.dirname(os.path.realpath("__file__"))
 
     if configPath is not None:

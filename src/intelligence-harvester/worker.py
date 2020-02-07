@@ -1,19 +1,23 @@
-import os
 import json
-import service
-import requests
-from OTXv2 import OTXv2
-from pymisp import PyMISP
+import os
 from collections import defaultdict
 from datetime import datetime, timedelta
+from multiprocessing import Pool as ProcessPool
+
+import requests
 
 # Dirty fix to ignore HTTPS warnings
 import urllib3
+from OTXv2 import OTXv2
+from pymisp import PyMISP
+
+import service
 
 urllib3.disable_warnings()
 # ----------------------------------
 
-Logger = service.logEvent(__name__)
+Logger = service.logEvent(__file__)
+Config = service.loadConfig("config/settings.yml")
 
 
 class Feeds:
@@ -67,30 +71,31 @@ class Feeds:
 
         return otxDict
 
-    def getOsintFeed(self, feedPack: list) -> dict:
+    def getOsintFeed(self, feed: dict) -> dict:
         """
         Download the feeds specified. Just get the feed its own format without parsing
         :param feedUrl: The location of the source to download
         :param feedPack: A dictionary with feed data and its names
         :return The content of the request
         """
-
+        # TODO: Try to use aiohttp to make async get such as `r = yield from aiohttp.get() yield from r.text()`
         try:
             startTime = datetime.now()
-            feed = requests.get(feedPack[0])
+            response = requests.get(feed["url"])
+            feed["payload"] = response.text
 
         except requests.exceptions.SSLError as sslErr:
             Logger.error(
                 "Feed `{0}` can not be downloaded. Error {1}".format(
-                    feedPack[1], sslErr,
+                    feed["name"], sslErr,
                 ),
-            )  
+            )
             os.sys.exit(1)
 
         except requests.exceptions.ConnectionError as connErr:  # except (ConnectTimeout, HTTPError, ReadTimeout, Timeout, ConnectionError):
             Logger.error(
                 "Feed `{0}` can not be downloaded. Error {1}".format(
-                    feedPack[1], connErr,
+                    feed["name"], connErr,
                 ),
             )
             os.sys.exit(1)
@@ -98,30 +103,24 @@ class Feeds:
         except requests.exceptions.HTTPError as httpErr:
             Logger.error(
                 "Feed `{0}` can not be downloaded. Error {1}".format(
-                    feedPack[1], httpErr,
+                    feed["name"], httpErr,
                 ),
             )
             os.sys.exit(1)
 
-        feedSize = round(len(feed.content) / 1024, 2)
+        feed["size"] = round(len(response.content) / 1024, 2)
 
         execTime = datetime.now() - startTime
 
         Logger.info(
             "Feed `{0}` of {1} Kbytes downloaded in {2}".format(
-                feedPack[1], feedSize, execTime
+                feed["name"], feed["size"], execTime
             ),
         )
 
-        feedDict = dict()
+        return feed
 
-        feedDict["source"] = feedPack[1]
-        feedDict["feedSize"] = feedSize
-        feedDict["iocs"] = FeedProcessor.preprocessFeed(self, feed.text)
-
-        return feedDict
-
-    def batchFeedDownload(self, feedPack: list, procs: int or str) -> list:
+    def batchFeedDownload(self, feed: dict) -> list:
         """
         Downloads collection of feeds in parallel processes
         :param feedsPack: Feed data
@@ -130,52 +129,40 @@ class Feeds:
 
         Logger.info("Download started")
 
-        if type(procs) == str:
-            if procs == "auto":
+        config = Config["SYSTEM"]["PROCESS_COUNT"]
 
-                downloadStartTime = datetime.now()
-                feedData: list = []
+        print(config)
 
-                # Iterate over feed links and download feeds
-                for link in feedPack:
-                    feedData.append(self.getFeed(link))
+        # Log download start time
+        downloadStartTime = datetime.now()
+        feedData: list = []
 
-                downloadTime = datetime.now() - downloadStartTime
+        # Define process pool and start download feeds from feedPack in parallel processes
+        pool = ProcessPool(config)
 
-                return feedData
+        # Download feeds in a number of separate processes
+        feedData = pool.map(self.getOsintFeed, feed)
 
-        elif type(procs) == int and procs > 1:
+        # Log download end time
+        downloadTime = datetime.now() - downloadStartTime
 
-            # Log download start time
-            downloadStartTime = datetime.now()
-            feedData: list = []
+        # Calcuate total feeds size
+        totalFeedsSize: int = 0
 
-            # Define process pool and start download feeds from feedPack in parallel processes
-            pool = ProcessPool(procs)
+        for item in feedData:
+            totalFeedsSize += item["size"]
 
-            # Download feeds in a number of separate processes
-            feedData = pool.map(self.getFeed, feedPack)
-
-            # Log download end time
-            downloadTime = datetime.now() - downloadStartTime
-
-            # Calcuate total feeds size
-            totalFeedsSize: int = 0
-
-            for dictItem in feedData:
-                totalFeedsSize += dictItem["feedSize"]
-
-            # Log results
-            Logger.info(
-                "Successfully downloaded {0} feeds of {1} Kbytes in {2}".format(
-                    len(feedPack), round(totalFeedsSize, 1), downloadTime
-                )
+        # Log results
+        Logger.info(
+            "Successfully downloaded {0} feeds of {1} Kbytes in {2}".format(
+                len(feedData), round(totalFeedsSize, 1), downloadTime
             )
+        )
 
-            pool.close()
-            pool.join()
+        pool.close()
+        pool.join()
 
-            return feedData
+        return feedData
 
 
 def getAllMispAttributes(self, misps: list, procs: int, iocsOnly: bool = False):
@@ -213,4 +200,3 @@ def getLastMispAttributes(self, misps: list, last: str):
         return Integration.getLastMispAttributes(
             misp["MISP_NAME"], misp["URL"], misp["API_KEY"], last
         )
-
