@@ -23,10 +23,8 @@ class Downloader:
 
     def getOsintFeed(self) -> dict:
         """
-        Download the feeds specified. Just get the feed its own format without parsing
-        :param feedUrl: The location of the source to download
-        :param feedPack: A dictionary with feed data and its names
-        :return The content of the request
+        Downloads the feeds specified in configuration file.
+        :return: Feed object
         """
         feedPack: list = []
         feed: dict = {}
@@ -36,9 +34,7 @@ class Downloader:
             feed["url"] = v
             feedPack.append(feed.copy())
 
-        OSINT = Feeds.batchFeedDownload(feedPack)
-
-        return OSINT
+        return Feeds.batchFeedDownload(feedPack)
 
     """
     async def batchDownload():

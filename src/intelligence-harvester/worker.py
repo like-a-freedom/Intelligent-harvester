@@ -74,9 +74,8 @@ class Feeds:
     def getOsintFeed(self, feed: dict) -> dict:
         """
         Download the feeds specified. Just get the feed its own format without parsing
-        :param feedUrl: The location of the source to download
-        :param feedPack: A dictionary with feed data and its names
-        :return The content of the request
+        :param feed: Feed object
+        :return: Feed object 
         """
         # TODO: Try to use aiohttp to make async get such as `r = yield from aiohttp.get() yield from r.text()`
         try:
@@ -123,8 +122,7 @@ class Feeds:
     def batchFeedDownload(self, feed: dict) -> list:
         """
         Downloads collection of feeds in parallel processes
-        :param feedsPack: Feed data
-        :param proc: Number of parallel processes to get data over different feeds
+        :param feed: Feed object
         """
 
         Logger.info("Download started")
