@@ -125,18 +125,16 @@ class Feeds:
         :param feed: Feed object
         """
 
-        Logger.info("Download started")
+        cpu_count = Config["SYSTEM"]["PROCESS_COUNT"]
 
-        config = Config["SYSTEM"]["PROCESS_COUNT"]
-
-        print(config)
+        Logger.info("Download started in " + str(cpu_count) + " processes")
 
         # Log download start time
         downloadStartTime = datetime.now()
         feedData: list = []
 
         # Define process pool and start download feeds from feedPack in parallel processes
-        pool = ProcessPool(config)
+        pool = ProcessPool(cpu_count)
 
         # Download feeds in a number of separate processes
         feedData = pool.map(self.getOsintFeed, feed)

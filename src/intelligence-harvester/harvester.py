@@ -1,7 +1,11 @@
+import json
+import asyncio
 import logging
 from datetime import datetime
 
 import requests
+from nats.aio.client import Client as NATS
+from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
 
 import service
 import worker
@@ -15,10 +19,13 @@ class Downloader:
         self.settings = service.loadConfig("config/settings.yml")
         self.feeds = service.loadConfig("config/feeds.yml")
 
+        self.nats_address = str(self.settings["SYSTEM"]["NATS_ADDRESS"])
+        self.nats_port = str(self.settings["SYSTEM"]["NATS_PORT"])
+
         Logger.info("Configuration loaded")
 
-    async def getOtx(self, daysSince: int, apiKey: str):
-        OTX = await Feeds.getOtxFeed(daysSince, apiKey)
+    def getOtx(self, daysSince: int, apiKey: str):
+        OTX = Feeds.getOtxFeed(daysSince, apiKey)
         return OTX
 
     def getOsintFeed(self) -> dict:
@@ -34,12 +41,29 @@ class Downloader:
             feed["url"] = v
             feedPack.append(feed.copy())
 
-        return Feeds.batchFeedDownload(feedPack)
+        return list(self.makeChunks(Feeds.batchFeedDownload(feedPack), 1))
 
-    """
-    async def batchDownload():
-        batch = await Feeds.batchFeedDownload(feedPack, procs)
-    """
+    def makeChunks(self, list: list, size: int) -> object:
+        """Yield successive n-sized chunks from lst."""
+        for i in range(0, len(list), size):
+            yield list[i : i + size]
+
+    async def sendFeedToMQ(self, feed: list):
+        """
+        Send feed chunks to NATS MQ: https://github.com/nats-io/asyncio-nats-examples
+        :param feed: feed chunks
+        
+        """
+
+        nc = NATS()
+
+        await nc.connect(
+            servers=["nats://" + self.nats_address + ":" + self.nats_port],
+            name="harvester",
+        )
+        await nc.publish("harvester", json.dumps(feed).encode())
+
+        await nc.close()
 
 
 if __name__ == "__main__":
@@ -47,4 +71,8 @@ if __name__ == "__main__":
     Downloader = Downloader()
 
     Logger.info("Harverster started: it's time to grab some data")
-    print(Downloader.getOsintFeed())
+    # print(Downloader.getOsintFeed())
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(Downloader.sendFeedToMQ(Downloader.getOsintFeed()))
+    loop.close()
