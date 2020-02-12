@@ -55,15 +55,15 @@ class Downloader:
         
         """
 
-        nc = NATS()
+        nats = NATS()
 
-        await nc.connect(
+        await nats.connect(
             servers=["nats://" + self.nats_address + ":" + self.nats_port],
             name="harvester",
         )
-        await nc.publish("harvester", json.dumps(feed).encode())
+        await nats.publish("harvester", json.dumps(feed).encode())
 
-        await nc.close()
+        await nats.close()
 
 
 if __name__ == "__main__":
