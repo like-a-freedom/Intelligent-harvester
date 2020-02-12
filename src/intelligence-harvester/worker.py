@@ -1,9 +1,9 @@
+import asyncio
 import json
 import os
-from collections import defaultdict
 from datetime import datetime, timedelta
 from multiprocessing import Pool as ProcessPool
-from dummy_threading import threading
+from time import time
 
 import aiodns
 import aiohttp
@@ -11,9 +11,6 @@ import requests
 
 # Dirty fix to ignore HTTPS warnings
 import urllib3
-
-from OTXv2 import OTXv2
-from pymisp import PyMISP
 
 import service
 import transport
@@ -25,59 +22,11 @@ Logger = service.logEvent(__file__)
 Config = service.loadConfig("config/settings.yml")
 Transport = transport.MQ()
 
+CHUNK_SIZE = 1024
 
-class Feeds:
-    def getOtxFeed(self, days: int, apiKey: str) -> dict:
-        """
-            Receive the IoCs from Alienvault OTX
-            :param days: How many days the reslts from the feed can be
-            :return: List of IP addresses and domains from the specific feed
-            """
 
-        otx = OTXv2(apiKey)
-
-        try:
-            Logger.logEvent().info("OTX integration started")
-            startTime = datetime.now()
-            pulses = otx.getsince((datetime.now() - timedelta(days=days)).isoformat())
-            # pulses = otx.getall()
-            otx.get
-            execTime = datetime.now() - startTime
-            print(
-                "OTX feed download complete in {0}: {1} events received".format(
-                    execTime, len(pulses)
-                )
-            )
-            Logger.logEvent().info(
-                "OTX feed download complete: %s events received" % len(pulses)
-            )
-        except Exception as otxDownloadFailedError:
-            Logger.logEvent().error(
-                "OTX feed download failed: " % otxDownloadFailedError
-            )
-
-        mappings = {
-            "hostname": "hostname",
-            "IPv4": "ip",
-            "URL": "url",
-            "domain": "domain",
-            "FileHash-SHA1": "sha1",
-            "FileHash-SHA256": "sha256",
-            "FileHash-MD5": "md5",
-            "YARA": "yara",
-        }
-
-        otxDict = defaultdict(list)
-
-        for index, feeds in enumerate(pulses):
-            for pulse in pulses[index]["indicators"]:
-                type = pulse["type"]
-                if type in mappings:
-                    otxDict[mappings[type]].append(pulse["indicator"])
-
-        return otxDict
-
-    def getOsintFeed(self, session: aiohttp.ClientSession, feed: dict) -> dict:
+class Downloader:
+    async def getOsintFeed(self, session: aiohttp.ClientSession, feed: dict) -> dict:
         """
         Download the feeds specified. Just get the feed its own format without parsing
         :param session: aiohttp ClientSession
@@ -85,6 +34,16 @@ class Feeds:
         :return: Feed object 
         """
         # TODO: Try to use aiohttp to make async get such as `r = yield from aiohttp.get() yield from r.text()`
+        time_start = time()
+
+        async with session.get(feed["url"], allow_redirects=True) as response:
+            while True:
+                chunk = await response.text.read(CHUNK_SIZE)
+                if not chunk:
+                    Logger.error(f"Feed {feed['name']} can not be downloaded")
+                    break
+                print(chunk)
+        """
         try:
             startTime = datetime.now()
             response = requests.get(feed["url"])
@@ -125,6 +84,7 @@ class Feeds:
         )
 
         return feed
+        """
 
     def batchFeedDownload(self, feed: dict) -> list:
         """
@@ -167,45 +127,22 @@ class Feeds:
 
         return feedData
 
+    async def getAllOsintFeeds(self, feeds: dict):
+        async with aiohttp.ClientSession(conn_timeout=3, read_timeout=3) as session:
+            feeds = [(self.getOsintFeed(session, feed)) for feed in feeds]
+            await asyncio.gather(*feeds, return_exceptions=True)
+
+    def getFeeds(self, feeds: dict):
+        time_start = time()
+        loop = asyncio.get_event_loop()
+        try:
+            loop.run_until_complete(self.getAllOsintFeeds(feeds))
+        finally:
+            # Shutdown the loop even if there is an exception
+            loop.close()
+        Logger.info("Took %s seconds to complete", round(time() - time_start, 1))
+
     def makeChunks(self, list: list, size: int) -> object:
         """Yield successive n-sized chunks from lst."""
         for i in range(0, len(list), size):
             yield list[i : i + size]
-
-    def getAllMispAttributes(self, misps: list, procs: int, iocsOnly: bool = False):
-        """
-        Get all iocs from MISP instance defined in the config file
-        :param misps: MISP configuration data
-        :param procs: Number of parallel processes to get data from different MISPs
-        :param iocsOnly: True means that only IoC will be exctracted from MISP attributes
-        """
-        Integration = Integrations()
-
-        if len(misps) == 1:
-            for misp in misps:
-                return Integration.getMispAttributes(misp, iocsOnly)
-        elif len(misps) > 1:
-            mispData: list = []
-
-            pool = ProcessPool(procs)
-            with ProcessPool(processes=procs) as pool:
-                # TODO: support `iocsOnly argument`
-                mispData = pool.map(Integration.getMispAttributes, misps)
-                pool.close()
-                pool.join()
-
-            return mispData
-
-        def getLastMispAttributes(self, misps: list, last: str):
-            """
-            Get new IoCs published last X days (e.g. '1d' or '14d')
-            """
-            Integration = Integrations()
-
-            for misp in misps:
-                return Integration.getLastMispAttributes(
-                    misp["MISP_NAME"], misp["URL"], misp["API_KEY"], last
-                )
-        
-        async def getFeeds():
-            pass

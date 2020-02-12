@@ -5,10 +5,8 @@ from nats.aio.client import Client as NATS
 from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
 
 import service
-import worker
 
 Logger = service.logEvent(__file__)
-Feeds = worker.Feeds()
 
 
 class MQ:

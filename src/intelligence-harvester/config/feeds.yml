@@ -13,9 +13,9 @@ COMMUNITY_FEEDS:
   #botvrijRegkey: http://www.botvrij.eu/data/ioclist.regkey.raw
 
   # SANS feeds
-  #SANSHighSuspiciousDomains: https://isc.sans.edu/feeds/suspiciousdomains_High.txt
-  #SANSMedSuspiciousDomains: https://isc.sans.edu/feeds/suspiciousdomains_Medium.txt
-  #SANSLowSuspiciousDomains: https://isc.sans.edu/feeds/suspiciousdomains_Low.txt
+  SANSHighSuspiciousDomains: https://isc.sans.edu/feeds/suspiciousdomains_High.txt
+  SANSMedSuspiciousDomains: https://isc.sans.edu/feeds/suspiciousdomains_Medium.txt
+  SANSLowSuspiciousDomains: https://isc.sans.edu/feeds/suspiciousdomains_Low.txt
   SANSTorExitNodes: https://isc.sans.edu/feeds/topips.txt
 
 VENDOR_FEEDS:

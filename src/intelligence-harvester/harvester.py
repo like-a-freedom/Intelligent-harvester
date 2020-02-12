@@ -9,43 +9,19 @@ import service
 import worker
 
 Logger = service.logEvent(__file__)
-Feeds = worker.Feeds()
+Worker = worker.Downloader()
 
 
-class Downloader:
-    def __init__(self):
-        self.settings = service.loadConfig("config/settings.yml")
-        self.feeds = service.loadConfig("config/feeds.yml")
+feeds = service.loadConfig("config/feeds.yml")
 
-        Logger.info("Configuration loaded")
+feedPack: list = []
+feed: dict = {}
 
-    def getOtx(self, daysSince: int, apiKey: str):
-        OTX = Feeds.getOtxFeed(daysSince, apiKey)
-        return OTX
+for k, v in feeds["COMMUNITY_FEEDS"].items():
+    feed["name"] = k
+    feed["url"] = v
+    feedPack.append(feed.copy())
 
-    def getOsintFeed(self) -> dict:
-        """
-        Downloads the feeds specified in configuration file.
-        :return: Feed object
-        """
-        feedPack: list = []
-        feed: dict = {}
-
-        for k, v in self.feeds["COMMUNITY_FEEDS"].items():
-            feed["name"] = k
-            feed["url"] = v
-            feedPack.append(feed.copy())
-
-        return list(Feeds.makeChunks(Feeds.batchFeedDownload(feedPack), 1))
-
-
-if __name__ == "__main__":
-
-    Downloader = Downloader()
-
-    Logger.info("Harverster started: it's time to grab some data")
-    # print(Downloader.getOsintFeed())
-
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(Feeds.sendFeedToMQ(Downloader.getOsintFeed()))
-    loop.close()
+Logger.info("Harvester configuration loaded")
+Logger.info("Harverster started: it's time to grab some data")
+Worker.getFeeds(feedPack)
