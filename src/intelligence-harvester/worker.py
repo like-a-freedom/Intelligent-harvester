@@ -3,21 +3,27 @@ import os
 from collections import defaultdict
 from datetime import datetime, timedelta
 from multiprocessing import Pool as ProcessPool
+from dummy_threading import threading
 
+import aiodns
+import aiohttp
 import requests
 
 # Dirty fix to ignore HTTPS warnings
 import urllib3
+
 from OTXv2 import OTXv2
 from pymisp import PyMISP
 
 import service
+import transport
 
 urllib3.disable_warnings()
 # ----------------------------------
 
 Logger = service.logEvent(__file__)
 Config = service.loadConfig("config/settings.yml")
+Transport = transport.MQ()
 
 
 class Feeds:
@@ -71,9 +77,10 @@ class Feeds:
 
         return otxDict
 
-    def getOsintFeed(self, feed: dict) -> dict:
+    def getOsintFeed(self, session: aiohttp.ClientSession, feed: dict) -> dict:
         """
         Download the feeds specified. Just get the feed its own format without parsing
+        :param session: aiohttp ClientSession
         :param feed: Feed object
         :return: Feed object 
         """
@@ -160,39 +167,45 @@ class Feeds:
 
         return feedData
 
+    def makeChunks(self, list: list, size: int) -> object:
+        """Yield successive n-sized chunks from lst."""
+        for i in range(0, len(list), size):
+            yield list[i : i + size]
 
-def getAllMispAttributes(self, misps: list, procs: int, iocsOnly: bool = False):
-    """
-    Get all iocs from MISP instance defined in the config file
-    :param misps: MISP configuration data
-    :param procs: Number of parallel processes to get data from different MISPs
-    :param iocsOnly: True means that only IoC will be exctracted from MISP attributes
-    """
-    Integration = Integrations()
+    def getAllMispAttributes(self, misps: list, procs: int, iocsOnly: bool = False):
+        """
+        Get all iocs from MISP instance defined in the config file
+        :param misps: MISP configuration data
+        :param procs: Number of parallel processes to get data from different MISPs
+        :param iocsOnly: True means that only IoC will be exctracted from MISP attributes
+        """
+        Integration = Integrations()
 
-    if len(misps) == 1:
-        for misp in misps:
-            return Integration.getMispAttributes(misp, iocsOnly)
-    elif len(misps) > 1:
-        mispData: list = []
+        if len(misps) == 1:
+            for misp in misps:
+                return Integration.getMispAttributes(misp, iocsOnly)
+        elif len(misps) > 1:
+            mispData: list = []
 
-        pool = ProcessPool(procs)
-        with ProcessPool(processes=procs) as pool:
-            # TODO: support `iocsOnly argument`
-            mispData = pool.map(Integration.getMispAttributes, misps)
-            pool.close()
-            pool.join()
+            pool = ProcessPool(procs)
+            with ProcessPool(processes=procs) as pool:
+                # TODO: support `iocsOnly argument`
+                mispData = pool.map(Integration.getMispAttributes, misps)
+                pool.close()
+                pool.join()
 
-        return mispData
+            return mispData
 
+        def getLastMispAttributes(self, misps: list, last: str):
+            """
+            Get new IoCs published last X days (e.g. '1d' or '14d')
+            """
+            Integration = Integrations()
 
-def getLastMispAttributes(self, misps: list, last: str):
-    """
-    Get new IoCs published last X days (e.g. '1d' or '14d')
-    """
-    Integration = Integrations()
-
-    for misp in misps:
-        return Integration.getLastMispAttributes(
-            misp["MISP_NAME"], misp["URL"], misp["API_KEY"], last
-        )
+            for misp in misps:
+                return Integration.getLastMispAttributes(
+                    misp["MISP_NAME"], misp["URL"], misp["API_KEY"], last
+                )
+        
+        async def getFeeds():
+            pass

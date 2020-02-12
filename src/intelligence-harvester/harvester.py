@@ -1,11 +1,9 @@
-import json
 import asyncio
+import json
 import logging
 from datetime import datetime
 
 import requests
-from nats.aio.client import Client as NATS
-from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
 
 import service
 import worker
@@ -18,9 +16,6 @@ class Downloader:
     def __init__(self):
         self.settings = service.loadConfig("config/settings.yml")
         self.feeds = service.loadConfig("config/feeds.yml")
-
-        self.nats_address = str(self.settings["SYSTEM"]["NATS_ADDRESS"])
-        self.nats_port = str(self.settings["SYSTEM"]["NATS_PORT"])
 
         Logger.info("Configuration loaded")
 
@@ -41,29 +36,7 @@ class Downloader:
             feed["url"] = v
             feedPack.append(feed.copy())
 
-        return list(self.makeChunks(Feeds.batchFeedDownload(feedPack), 1))
-
-    def makeChunks(self, list: list, size: int) -> object:
-        """Yield successive n-sized chunks from lst."""
-        for i in range(0, len(list), size):
-            yield list[i : i + size]
-
-    async def sendFeedToMQ(self, feed: list):
-        """
-        Send feed chunks to NATS MQ: https://github.com/nats-io/asyncio-nats-examples
-        :param feed: feed chunks
-        
-        """
-
-        nats = NATS()
-
-        await nats.connect(
-            servers=["nats://" + self.nats_address + ":" + self.nats_port],
-            name="harvester",
-        )
-        await nats.publish("harvester", json.dumps(feed).encode())
-
-        await nats.close()
+        return list(Feeds.makeChunks(Feeds.batchFeedDownload(feedPack), 1))
 
 
 if __name__ == "__main__":
@@ -74,5 +47,5 @@ if __name__ == "__main__":
     # print(Downloader.getOsintFeed())
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(Downloader.sendFeedToMQ(Downloader.getOsintFeed()))
+    loop.run_until_complete(Feeds.sendFeedToMQ(Downloader.getOsintFeed()))
     loop.close()
