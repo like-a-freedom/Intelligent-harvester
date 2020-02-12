@@ -43,48 +43,6 @@ class Downloader:
                     Logger.error(f"Feed {feed['name']} can not be downloaded")
                     break
                 print(chunk)
-        """
-        try:
-            startTime = datetime.now()
-            response = requests.get(feed["url"])
-            feed["payload"] = response.text
-
-        except requests.exceptions.SSLError as sslErr:
-            Logger.error(
-                "Feed `{0}` can not be downloaded. Error {1}".format(
-                    feed["name"], sslErr,
-                ),
-            )
-            os.sys.exit(1)
-
-        except requests.exceptions.ConnectionError as connErr:  # except (ConnectTimeout, HTTPError, ReadTimeout, Timeout, ConnectionError):
-            Logger.error(
-                "Feed `{0}` can not be downloaded. Error {1}".format(
-                    feed["name"], connErr,
-                ),
-            )
-            os.sys.exit(1)
-
-        except requests.exceptions.HTTPError as httpErr:
-            Logger.error(
-                "Feed `{0}` can not be downloaded. Error {1}".format(
-                    feed["name"], httpErr,
-                ),
-            )
-            os.sys.exit(1)
-
-        feed["size"] = round(len(response.content) / 1024, 2)
-
-        execTime = datetime.now() - startTime
-
-        Logger.info(
-            "Feed `{0}` of {1} Kbytes downloaded in {2}".format(
-                feed["name"], feed["size"], execTime
-            ),
-        )
-
-        return feed
-        """
 
     def batchFeedDownload(self, feed: dict) -> list:
         """
