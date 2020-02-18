@@ -28,7 +28,7 @@ CHUNK_SIZE = 1024
 class Downloader:
     async def getOsintFeed(self, session: aiohttp.ClientSession, feed: dict):
         """
-        Download the feeds specified. Just get the feed its own format without parsing
+        Download the feed specified. Just get the feed of its own format without any parsing
         :param session: aiohttp ClientSession
         :param feed: Feed object
         :return: Feed object 
@@ -49,8 +49,11 @@ class Downloader:
                             f"Feed `{feed['name']}` of {total_size} Kbytes downloaded in {total_time} seconds"
                         )
                         break
-                    print(chunk.decode())
+                    # DEBUG ONLY BELOW
+                    # print(chunk.decode())
                     # TODO: send to MQ
+                    Transport.sendMsgToMQ(chunk)
+                    # return chunk
             else:
                 Logger.error(f"Feed `{feed['name']}` can not be downloaded")
 
@@ -96,6 +99,11 @@ class Downloader:
         return feedData
 
     async def getAllOsintFeeds(self, feeds: dict):
+        """
+        Downloads all opensource feeds from
+        configuration file and send it to MQ
+        :param feeds: Feeds object
+        """
         async with aiohttp.ClientSession(
             conn_timeout=3,
             read_timeout=3,
@@ -105,6 +113,10 @@ class Downloader:
             await asyncio.gather(*feeds, return_exceptions=True)
 
     def getFeeds(self, feeds: dict):
+        """
+        Get all feeds specified in configuration file in async mode
+        :param feeds: Feeds object
+        """
         time_start = time()
 
         loop = asyncio.get_event_loop()
