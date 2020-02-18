@@ -18,7 +18,7 @@ class MQ:
 
         Logger.info("Configuration loaded")
 
-    async def sendMsgToMQ(self, feed: list):
+    async def sendMsgToMQ(self, msg: bytes):
         """
         Send feed chunks to NATS MQ: https://github.com/nats-io/asyncio-nats-examples
         :param feed: feed chunks
@@ -30,7 +30,7 @@ class MQ:
                 servers=["nats://" + self.NATS_ADDRESS + ":" + self.NATS_PORT],
                 name="harvester",
             )
-            await nats.publish("harvester", json.dumps(feed).encode())
+            await nats.publish("harvester", msg)
         except ErrTimeout as e:
             Logger.error("Connection timeout: " + e)
 
