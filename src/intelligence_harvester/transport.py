@@ -26,12 +26,9 @@ class MQ:
 
         nats = NATS()
         try:
-            await nats.connect(
-                servers=["nats://" + self.NATS_ADDRESS + ":" + self.NATS_PORT],
-                name="harvester",
-            )
+            await nats.connect("nats://" + self.NATS_ADDRESS + ":" + self.NATS_PORT)
             await nats.publish("harvester", msg)
-        except ErrTimeout as e:
-            Logger.error("Connection timeout: " + e)
+        except ErrConnectionClosed as e:
+            Logger.error("Connection closed: " + e)
 
         await nats.close()

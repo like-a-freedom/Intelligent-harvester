@@ -11,6 +11,7 @@ ioc.db
 iocs.db
 iocs.db-journal
 harvester.log
+parser.log
 misp.db
 indicators.txt
 indicators.large.4m.txt

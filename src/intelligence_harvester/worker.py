@@ -52,7 +52,7 @@ class Downloader:
                     # DEBUG ONLY BELOW
                     # print(chunk.decode())
                     # TODO: send to MQ
-                    Transport.sendMsgToMQ(chunk)
+                    await Transport.sendMsgToMQ(chunk)
                     # return chunk
             else:
                 Logger.error(f"Feed `{feed['name']}` can not be downloaded")
