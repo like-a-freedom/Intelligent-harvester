@@ -13,7 +13,7 @@ osint_parser = osint_common.FeedParser()
 """ TODO:
 self.NATS_ADDRESS = os.getenv('NATS_ADDRESS') or settings["SYSTEM"]["NATS_ADDRESS"]
 self.NATS_PORT = os.getenv('NATS_PORTS') or settings["SYSTEM"]["NATS_PORT"]
-self.PROCESS_COUNT = os.getenv('PROCESS_COUNT') or config['SYSTEM']['PROCESS_COUNT']
+self.LOG_LEVEL = os.getenv('LOG_LEVEL') or config['SYSTEM']['LOG_LEVEL']
 """
 
 
@@ -40,5 +40,8 @@ class Processor:
         self.settings = service.loadConfig("config/settings.yml")
         self.parallel_proc = int(self.settings["SYSTEM"]["PROCESS_COUNT"])
 
-    def opensource_feed_processor(self, feed: str, parallel_proc: int) -> object:
-        print(osint_parser.parseFeed(feed))
+    async def opensource_feed_processor(self, feed: dict, parallel_proc: int) -> object:
+        await osint_parser.parseFeed(feed)
+        # f = osint_parser.parseFeed(feed)
+        # r = list(item for item in f.items())
+        # print(r)

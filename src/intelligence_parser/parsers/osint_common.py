@@ -10,20 +10,23 @@ logger = service.logEvent(__file__)
 
 
 class FeedParser:
-    def __preprocessFeed(self, feed: str) -> str:
+    def __preprocessFeed(self, feed: dict) -> dict:
         """
         Preprocess feeds: remove comments, delimiters
-        :param feedPack: List of IoCs
-        :return: Clean list of IoCs
+        :param feed: feed object
+        :return: processed feed object
         """
 
         # Clearing feed
         step1 = re.split(
             "; |;|, |,|\n|\r|\r\n|\t",
-            feed.replace("\r", "").replace('"', "").replace("'", ""),
+            feed["feed_data"].replace("\r", "").replace('"', "").replace("'", ""),
         )
         # Remove any `#` comments from feeds
         step2 = [item for item in step1 if not item.startswith("#")]
+
+        # Remove any empty values
+        step3 = [item for item in step2 if item]
 
         # TODO: remove defang, remove 127.0.0.1, localhost IPs
 
@@ -34,15 +37,19 @@ class FeedParser:
             i = re.sub(b'\[\.\]', b'.', ioc)
         """
 
-        return step2
+        feed["feed_data"] = step3
+
+        return feed
 
     def parseFeed(self, feed: str) -> dict:
         """
         Parse feed data
         :param feed: Threat intelligence feed chunk
         """
-
+        time_start = time()
         feed = self.__preprocessFeed(feed)
+
+        # print("\nCHUNK:\n\n", feed)
 
         # TODO: try to use https://github.com/InQuest/python-iocextract instead of own method
 
@@ -79,19 +86,19 @@ class FeedParser:
         time_start = time()
 
         ### Iterate over the lists and match IOCs
-        url_list = list(filter(url_pattern.match, feed))
-        ip_list = list(filter(ip_pattern.match, feed))
-        domain_list = list(filter(domain_pattern.match, feed))
-        email_list = list(filter(email_pattern.match, feed))
-        regkey_list = list(filter(regkey_pattern.match, feed))
-        md5_list = list(filter(md5_pattern.match, feed))
-        sha1_list = list(filter(sha1_pattern.match, feed))
-        sha256_list = list(filter(sha256_pattern.match, feed))
-        sha512_list = list(filter(sha512_pattern.match, feed))
-        filename_list = list(filter(filename_pattern.match, feed))
-        filepath_list = list(filter(filepath_pattern.match, feed))
-        cve_list = list(filter(cve_pattern.match, feed))
-        yara_list = list(filter(yara_pattern.match, feed))
+        url_list = list(filter(url_pattern.match, feed["feed_data"]))
+        ip_list = list(filter(ip_pattern.match, feed["feed_data"]))
+        domain_list = list(filter(domain_pattern.match, feed["feed_data"]))
+        email_list = list(filter(email_pattern.match, feed["feed_data"]))
+        regkey_list = list(filter(regkey_pattern.match, feed["feed_data"]))
+        md5_list = list(filter(md5_pattern.match, feed["feed_data"]))
+        sha1_list = list(filter(sha1_pattern.match, feed["feed_data"]))
+        sha256_list = list(filter(sha256_pattern.match, feed["feed_data"]))
+        sha512_list = list(filter(sha512_pattern.match, feed["feed_data"]))
+        filename_list = list(filter(filename_pattern.match, feed["feed_data"]))
+        filepath_list = list(filter(filepath_pattern.match, feed["feed_data"]))
+        cve_list = list(filter(cve_pattern.match, feed["feed_data"]))
+        yara_list = list(filter(yara_pattern.match, feed["feed_data"]))
 
         total_time = round(time() - time_start, 1)
 
@@ -137,25 +144,35 @@ class FeedParser:
 
         # Insert IOCs into dict with a type of IOCs
 
-        parsed_dict = defaultdict(defaultdict(list).copy)
+        parsed_dict = defaultdict(list)
 
         # parsed_dict["source"] = feed["source"]
         # parsed_dict["totalIocs"] = total_parsed
-        parsed_dict["iocs"]["ip"] = ip_list
-        parsed_dict["iocs"]["url"] = url_list
-        parsed_dict["iocs"]["domain"] = domain_list
-        parsed_dict["iocs"]["email"] = email_list
-        parsed_dict["iocs"]["regkey"] = regkey_list
-        parsed_dict["iocs"]["md5"] = md5_list
-        parsed_dict["iocs"]["sha1"] = sha1_list
-        parsed_dict["iocs"]["sha256"] = sha256_list
-        parsed_dict["iocs"]["sha512"] = sha512_list
-        parsed_dict["iocs"]["filename"] = filename_list
-        parsed_dict["iocs"]["filepath"] = filepath_list
-        parsed_dict["iocs"]["cve"] = cve_list
-        parsed_dict["iocs"]["yara"] = yara_list
+        parsed_dict["ip"] = ip_list
+        parsed_dict["url"] = url_list
+        parsed_dict["domain"] = domain_list
+        parsed_dict["email"] = email_list
+        parsed_dict["regkey"] = regkey_list
+        parsed_dict["md5"] = md5_list
+        parsed_dict["sha1"] = sha1_list
+        parsed_dict["sha256"] = sha256_list
+        parsed_dict["sha512"] = sha512_list
+        parsed_dict["filename"] = filename_list
+        parsed_dict["filepath"] = filepath_list
+        parsed_dict["cve"] = cve_list
+        parsed_dict["yara"] = yara_list
 
-        return parsed_dict
+        feed["feed_data"] = parsed_dict
+
+        total_time = round((time() - time_start), 3)
+        logger.debug(
+            f"Chunk stats: parsed {total_parsed} iocs in {total_time} seconds"
+        )
+
+        # DEBUG ONLY BELOW
+        # print(feed)
+
+        return feed
 
     def batchFeedParse(self, feed: str, parallel_proc: int) -> dict:
         """
@@ -179,7 +196,7 @@ class FeedParser:
         else:
             parsed_data = pool.map(self.__parseFeed, feed_pack)
         """
-        parsed_data.append(self.__parseFeed(feed))
+        parsed_data.append(self.parseFeed(feed))
 
         total_time = round(time() - time_start, 1)
 

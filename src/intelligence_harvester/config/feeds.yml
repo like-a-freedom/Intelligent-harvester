@@ -2,21 +2,47 @@ COMMUNITY_FEEDS:
   # BOTVRIJ.EU feed
   # Feed can be with context as: http://www.botvrij.eu/data/ioclist.ip-dst
   # or without (with `raw` postfix): http://www.botvrij.eu/data/ioclist.ip-dst.raw
-  # botvrijIpDst: http://www.botvrij.eu/data/ioclist.ip-dst.raw
-  #botvrijDomain: http://www.botvrij.eu/data/ioclist.domain.raw
-  #botvrijUrl: http://www.botvrij.eu/data/ioclist.url.raw
-  #botvrijFilename: http://www.botvrij.eu/data/ioclist.filename.raw
-  #botvrijMD5: http://www.botvrij.eu/data/ioclist.md5.raw
-  #botvrijSHA1: http://www.botvrij.eu/data/ioclist.sha1.raw
-  #botvrijSHA256: http://www.botvrij.eu/data/ioclist.sha256.raw
-  #botvrijEmailSrc: http://www.botvrij.eu/data/ioclist.email-src.raw
-  #botvrijRegkey: http://www.botvrij.eu/data/ioclist.regkey.raw
+  botvrijIpDst:
+    - url: http://www.botvrij.eu/data/ioclist.ip-dst.raw
+    - type: txt
+  botvrijDomain:
+    - url: http://www.botvrij.eu/data/ioclist.domain.raw
+    - type: txt
+  botvrijUrl:
+    - url: http://www.botvrij.eu/data/ioclist.url.raw
+    - type: txt
+  botvrijFilename:
+    - url: http://www.botvrij.eu/data/ioclist.filename.raw
+    - type: txt
+  botvrijMD5:
+    - url: http://www.botvrij.eu/data/ioclist.md5.raw
+    - type: txt
+  botvrijSHA1:
+    - url: http://www.botvrij.eu/data/ioclist.sha1.raw
+    - type: txt
+  botvrijSHA256:
+    - url: http://www.botvrij.eu/data/ioclist.sha256.raw
+    - type: txt
+  botvrijEmailSrc:
+    - url: http://www.botvrij.eu/data/ioclist.email-src.raw
+    - type: txt
+  botvrijRegkey:
+    - url: http://www.botvrij.eu/data/ioclist.regkey.raw
+    - type: txt
 
   # SANS feeds
-  SANSHighSuspiciousDomains: https://isc.sans.edu/feeds/suspiciousdomains_High.txt
-  SANSMedSuspiciousDomains: https://isc.sans.edu/feeds/suspiciousdomains_Medium.txt
-  SANSLowSuspiciousDomains: https://isc.sans.edu/feeds/suspiciousdomains_Low.txt
-  SANSTorExitNodes: https://isc.sans.edu/feeds/topips.txt
+  SANSHighSuspiciousDomains:
+    - url: https://isc.sans.edu/feeds/suspiciousdomains_High.txt
+    - type: txt
+  SANSMedSuspiciousDomains:
+    - url: https://isc.sans.edu/feeds/suspiciousdomains_Medium.txt
+    - type: txt
+  SANSLowSuspiciousDomains:
+    - url: https://isc.sans.edu/feeds/suspiciousdomains_Low.txt
+    - type: txt
+  SANSTorExitNodes:
+    - url: https://isc.sans.edu/feeds/topips.txt
+    - type: txt
 
 VENDOR_FEEDS:
   OTX:

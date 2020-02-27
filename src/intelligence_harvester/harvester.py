@@ -3,24 +3,36 @@ import asyncio
 import service
 import worker
 
-Logger = service.logEvent(__file__)
-Worker = worker.Downloader()
+logger = service.logEvent(__file__)
+worker = worker.Downloader()
 
 
-feeds = service.loadConfig("config/feeds.yml")
+def loadConfig():
+    return service.loadConfig("config/feeds.yml")
 
-# Serve the feed object
 
-feedPack: list = []
-feed: dict = {}
+def loadFeeds() -> list:
+    feeds = loadConfig()
+    # Serve the feed object
+    feedPack: list = []
+    feed: dict = {}
 
-for k, v in feeds["COMMUNITY_FEEDS"].items():
-    feed["name"] = k
-    feed["url"] = v
-    feedPack.append(feed.copy())
+    for item in feeds["COMMUNITY_FEEDS"].items():
+        feed["feed_name"] = item[0]
+        for property in item[1]:
+            if "url" in property:
+                feed["feed_url"] = property["url"]
+            elif "type" in property:
+                feed["feed_type"] = property["type"]
+        feedPack.append(feed.copy())
+    logger.info(
+        f"Intelligent harvester configuration loaded: got {len(feedPack)} feeds from config"
+    )
+    return feedPack
 
-Logger.info("Intelligent harvester configuration loaded")
-Logger.info("Intelligent harvester started: it's time to grab some feeds")
 
-# Start the worker and get all feeds
-Worker.getFeeds(feedPack)
+if __name__ == "__main__":
+    # Start the worker and get all feeds
+    logger.info("\nIntelligent harvester started: it's time to grab some feeds")
+    worker.getFeeds(loadFeeds())
+

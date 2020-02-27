@@ -18,11 +18,18 @@ import transport
 urllib3.disable_warnings()
 # ----------------------------------
 
-Logger = service.logEvent(__file__)
-Config = service.loadConfig("config/settings.yml")
-Transport = transport.MQ()
+""" TODO:
+self.NATS_ADDRESS = os.getenv('NATS_ADDRESS') or settings["SYSTEM"]["NATS_ADDRESS"]
+self.NATS_PORT = os.getenv('NATS_PORTS') or settings["SYSTEM"]["NATS_PORT"]
+self.LOG_LEVEL = os.getenv('LOG_LEVEL') or config['SYSTEM']['LOG_LEVEL']
+"""
 
-CHUNK_SIZE = 1024
+logger = service.logEvent(__file__)
+config = service.loadConfig("config/settings.yml")
+transport = transport.MQ()
+
+FEED_CHUNK_SIZE = 8192
+LIST_CHUNK_SIZE = 1000
 
 
 class Downloader:
@@ -36,27 +43,43 @@ class Downloader:
         # TODO: Try to use aiohttp to make async get such as `r = yield from aiohttp.get() yield from r.text()`
         total_chunks: int = 0
         time_start = time()
+        # print(feed)
 
-        async with session.get(feed["url"], allow_redirects=True) as response:
+        async with session.get(feed["feed_url"], allow_redirects=True) as response:
             if response.status == 200:
+                feed_chunk: dict = {}
                 while True:
-                    chunk = await response.content.read(CHUNK_SIZE)
+                    chunk = await response.content.read(FEED_CHUNK_SIZE)
                     total_chunks += 1
                     if not chunk:
-                        total_time = round(time() - time_start, 1)
-                        total_size = (total_chunks * CHUNK_SIZE) / 1024
-                        Logger.info(
-                            f"Feed `{feed['name']}` of {total_size} Kbytes downloaded in {total_time} seconds"
+                        feed_download_time = round(time() - time_start, 1)
+                        feed_total_size = (total_chunks * FEED_CHUNK_SIZE) / 1024
+                        logger.info(
+                            f"Feed `{feed['feed_name']}` of {feed_total_size} Kbytes downloaded in {feed_download_time} seconds"
                         )
                         break
-                    # DEBUG ONLY BELOW
-                    # print(chunk.decode())
-                    # TODO: send to MQ
-                    await Transport.sendMsgToMQ(chunk)
-                    # return chunk
-            else:
-                Logger.error(f"Feed `{feed['name']}` can not be downloaded")
 
+                    # DEBUG ONLY BELOW
+                    """
+                    print(
+                        "\nCHUNK TYPE: ",
+                        type(chunk.decode()),
+                        "\nDOWNLOADED CHUNK:\n\n",
+                        chunk.decode(),
+                    )
+                    """
+
+                    feed_chunk["feed_name"] = feed["feed_name"]
+                    feed_chunk["feed_type"] = feed["feed_type"]
+                    feed_chunk["feed_data"] = chunk.decode()
+
+                    await transport.sendMsgToMQ(feed_chunk)
+            else:
+                logger.error(
+                    f"Feed `{feed['feed_name']}` can not be downloaded: {response.status}"
+                )
+
+    # TODO: remove as obsolete
     def batchFeedDownload(self, feed: dict) -> list:
         """
         Downloads collection of feeds in parallel processes
@@ -109,8 +132,8 @@ class Downloader:
             read_timeout=3,
             connector=aiohttp.TCPConnector(verify_ssl=False),
         ) as session:
-            feeds = [(self.getOsintFeed(session, feed)) for feed in feeds]
-            await asyncio.gather(*feeds, return_exceptions=True)
+            data = [(self.getOsintFeed(session, feed)) for feed in feeds]
+            await asyncio.gather(*data, return_exceptions=True)
 
     def getFeeds(self, feeds: dict):
         """
@@ -125,12 +148,11 @@ class Downloader:
         finally:
             # Shutdown the loop even if there is an exception
             loop.close()
+            logger.info(
+                f"Successfully downloaded and sent to MQ {len(feeds)} feeds in {round(time() - time_start, 1)} seconds"
+            )
 
-        Logger.info(
-            f"Successfully downloaded {len(feeds)} feeds in {round(time() - time_start, 1)} seconds"
-        )
-
-    def makeChunks(self, list: list, size: int) -> object:
+    def makeChunks(self, list: list, size: int = LIST_CHUNK_SIZE) -> object:
         """Yield successive n-sized chunks from lst."""
         for i in range(0, len(list), size):
             yield list[i : i + size]

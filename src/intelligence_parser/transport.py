@@ -43,9 +43,10 @@ class MQ:
 
         async def subscribe_handler(msg):
             subject = msg.subject
-            data = msg.data.decode()
+            data = json.loads((msg.data).decode())
+            # DEBUG ONLY
             # print(f"\nReceived a message on '{subject}':\n{data}")
-            worker.opensource_feed_processor(data, self.PROC_COUNT)
+            await worker.opensource_feed_processor(data, self.PROC_COUNT)
 
         try:
             return await nats.subscribe("harvester", cb=subscribe_handler)

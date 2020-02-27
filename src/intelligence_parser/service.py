@@ -7,7 +7,7 @@ def __init__() -> None:
     pass
 
 
-def logEvent(moduleName: str) -> object:
+def logEvent(moduleName: str, log_level=logging.INFO) -> object:
     """
     Write meesages into log file
     """
@@ -22,7 +22,7 @@ def logEvent(moduleName: str) -> object:
         )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
+        logger.setLevel(log_level)
 
         return logger
 
