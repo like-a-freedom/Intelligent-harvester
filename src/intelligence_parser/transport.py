@@ -3,7 +3,7 @@ import json
 import signal
 
 from nats.aio.client import Client as NATS
-from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout
+from nats.aio.errors import NatsError
 
 import service
 from worker import Processor
@@ -13,19 +13,24 @@ worker = Processor()
 
 
 class MQ:
-    def __init__(self, nats: NATS, loop=asyncio.get_event_loop()):
-        self.nats = nats
+    def __init__(self, loop=asyncio.get_event_loop()):
+        self.nats = NATS()
         self.loop = loop
 
         self.settings = service.loadConfig("config/settings.yml")
 
         self.NATS_ADDRESS = str(self.settings["SYSTEM"]["NATS_ADDRESS"])
         self.NATS_PORT = str(self.settings["SYSTEM"]["NATS_PORT"])
-        self.PROC_COUNT = int(self.settings["SYSTEM"]["PROCESS_COUNT"])
+
+        self.loop = asyncio.get_event_loop()
+        self.future = asyncio.Future()
 
         logger.info("Configuration loaded")
 
     async def getMsgFromMQ(self):
+        """
+        Receive feed chunks from NATS MQ
+        """
         nats = NATS()
 
         async def closed_cb():
@@ -34,7 +39,7 @@ class MQ:
             self.loop.stop()
 
         options = {
-            "servers": ["nats://" + self.NATS_ADDRESS + ":" + self.NATS_PORT],
+            "servers": [f"nats://{self.NATS_ADDRESS}:{self.NATS_PORT}"],
             "closed_cb": closed_cb,
         }
 
@@ -46,11 +51,11 @@ class MQ:
             data = json.loads((msg.data).decode())
             # DEBUG ONLY
             # print(f"\nReceived a message on '{subject}':\n{data}")
-            await worker.opensource_feed_processor(data, self.PROC_COUNT)
+            await worker.opensource_feed_processor(data)
 
         try:
-            return await nats.subscribe("harvester", cb=subscribe_handler)
-        except ErrConnectionClosed as e:
+            await nats.subscribe("harvester", cb=subscribe_handler)
+        except NatsError as e:
             logger.error("NATS connection closed: " + e)
 
         def signal_handler():
@@ -61,3 +66,34 @@ class MQ:
 
         for sig in ("SIGINT", "SIGTERM"):
             self.loop.add_signal_handler(getattr(signal, sig), signal_handler)
+
+    def subscribe(self):
+        self.loop.run_until_complete(self.getMsgFromMQ())
+        try:
+            self.loop.run_forever()
+        finally:
+            self.loop.close()
+
+    async def sendMsgToMQ(self, msg: dict):
+        """
+        Send parsed feed chunks to NATS MQ
+        """
+
+        nats = NATS()
+        msg = json.dumps(msg).encode()
+
+        try:
+            await nats.connect(f"nats://{self.NATS_ADDRESS}:{self.NATS_PORT}")
+            await nats.publish("storage", msg)
+        except NatsError as e:
+            logger.error("NATS error: " + e)
+
+        # await nats.flush()
+        await nats.close()
+
+    def publish(self, msg: object):
+        self.loop.run_until_complete(self.sendMsgToMQ(msg))
+        try:
+            self.loop.run_forever()
+        finally:
+            self.loop.close()

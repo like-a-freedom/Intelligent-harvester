@@ -41,7 +41,7 @@ class FeedParser:
 
         return feed
 
-    def parseFeed(self, feed: str) -> dict:
+    async def parseFeed(self, feed: str) -> dict:
         """
         Parse feed data
         :param feed: Threat intelligence feed chunk
@@ -165,9 +165,7 @@ class FeedParser:
         feed["feed_data"] = parsed_dict
 
         total_time = round((time() - time_start), 3)
-        logger.debug(
-            f"Chunk stats: parsed {total_parsed} iocs in {total_time} seconds"
-        )
+        logger.debug(f"Chunk stats: parsed {total_parsed} iocs in {total_time} seconds")
 
         # DEBUG ONLY BELOW
         # print(feed)

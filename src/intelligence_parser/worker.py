@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 from nats.aio.client import Client as NATS
 from nats.aio.errors import ErrConnectionClosed, ErrTimeout
@@ -17,31 +18,22 @@ self.LOG_LEVEL = os.getenv('LOG_LEVEL') or config['SYSTEM']['LOG_LEVEL']
 """
 
 
-class Consumer:
-    """
-    Get messages from MQ and send it to Processor
-    """
-
-    def getMessagesFromMQ(self):
-        # Avoid curcular import
-        from transport import MQ
-
-        transport = MQ(NATS)
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(transport.getMsgFromMQ())
-        try:
-            loop.run_forever()
-        finally:
-            loop.close()
-
-
 class Processor:
     def __init__(self):
-        self.settings = service.loadConfig("config/settings.yml")
-        self.parallel_proc = int(self.settings["SYSTEM"]["PROCESS_COUNT"])
+        self.loop = asyncio.get_event_loop()
 
-    async def opensource_feed_processor(self, feed: dict, parallel_proc: int) -> object:
-        await osint_parser.parseFeed(feed)
-        # f = osint_parser.parseFeed(feed)
-        # r = list(item for item in f.items())
-        # print(r)
+    async def opensource_feed_processor(self, feed: dict) -> object:
+        import transport
+
+        mq = transport.MQ()
+
+        msg = await osint_parser.parseFeed(feed)
+        # print("\nMSG: ", msg)
+        mq.publish(msg)
+
+    def startProcessing(self):
+
+        import transport
+
+        mq = transport.MQ()
+        mq.subscribe()
