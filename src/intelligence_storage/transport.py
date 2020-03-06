@@ -6,8 +6,10 @@ from nats.aio.client import Client as NATS
 from nats.aio.errors import NatsError
 
 import service
+import storage
 
-logger = service.logEvent(__file__)
+logger = service.logEvent(__name__)
+storage = storage.ClickHouse()
 
 
 class MQ:
@@ -48,7 +50,8 @@ class MQ:
             subject = msg.subject
             data = json.loads((msg.data).decode())
             # DEBUG ONLY
-            print(f"\nReceived a message on '{subject}':\n{data}")
+            # print(f"\nReceived a message on '{subject}':\n{data}")
+            await storage.insert(data)
 
         try:
             await nats.subscribe("storage", cb=subscribe_handler)

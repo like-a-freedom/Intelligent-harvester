@@ -24,11 +24,11 @@ self.NATS_PORT = os.getenv('NATS_PORTS') or settings["SYSTEM"]["NATS_PORT"]
 self.LOG_LEVEL = os.getenv('LOG_LEVEL') or config['SYSTEM']['LOG_LEVEL']
 """
 
-logger = service.logEvent(__file__)
+logger = service.logEvent(__name__)
 config = service.loadConfig("config/settings.yml")
 transport = transport.MQ()
 
-FEED_CHUNK_SIZE = 8192
+FEED_CHUNK_SIZE = 1048576
 LIST_CHUNK_SIZE = 1000
 
 
@@ -86,9 +86,9 @@ class Downloader:
         :param feed: Feed object
         """
 
-        cpu_count = Config["SYSTEM"]["PROCESS_COUNT"]
+        cpu_count = config["SYSTEM"]["PROCESS_COUNT"]
 
-        Logger.info("Download started in " + str(cpu_count) + " processes")
+        logger.info("Download started in " + str(cpu_count) + " processes")
 
         # Log download start time
         downloadStartTime = datetime.now()
@@ -110,7 +110,7 @@ class Downloader:
             totalFeedsSize += item["size"]
 
         # Log results
-        Logger.info(
+        logger.info(
             "Successfully downloaded {0} feeds of {1} Kbytes in {2}".format(
                 len(feedData), round(totalFeedsSize, 1), downloadTime
             )

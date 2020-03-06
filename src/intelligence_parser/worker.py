@@ -7,7 +7,7 @@ from nats.aio.errors import ErrConnectionClosed, ErrTimeout
 import service
 from parsers import osint_common
 
-logger = service.logEvent(__file__)
+logger = service.logEvent(__name__)
 
 osint_parser = osint_common.FeedParser()
 

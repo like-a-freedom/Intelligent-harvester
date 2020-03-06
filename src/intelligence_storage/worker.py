@@ -5,7 +5,7 @@ from nats.aio.errors import ErrConnectionClosed, ErrTimeout
 
 import service
 
-logger = service.logEvent(__file__)
+logger = service.logEvent(__name__)
 
 """ TODO:
 self.NATS_ADDRESS = os.getenv('NATS_ADDRESS') or settings["SYSTEM"]["NATS_ADDRESS"]

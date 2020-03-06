@@ -8,8 +8,10 @@ from nats.aio.errors import NatsError
 import service
 from worker import Processor
 
-logger = service.logEvent(__file__)
+logger = service.logEvent(__name__)
 worker = Processor()
+
+# Docs: https://github.com/nats-io/nats.py/issues/99
 
 
 class MQ:

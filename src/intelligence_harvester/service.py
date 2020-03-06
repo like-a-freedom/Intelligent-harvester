@@ -33,7 +33,7 @@ def loadConfig(configPath: str) -> object or None:
     :param configPath: Custom path to configuration file
     """
 
-    logger = logEvent(__file__)
+    logger = logEvent(__name__)
     workdir = os.path.dirname(os.path.realpath("__file__"))
 
     if configPath is not None:

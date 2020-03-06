@@ -6,7 +6,7 @@ from time import time
 
 import service
 
-logger = service.logEvent(__file__)
+logger = service.logEvent(__name__)
 
 
 class FeedParser:

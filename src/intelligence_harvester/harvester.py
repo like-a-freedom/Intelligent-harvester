@@ -3,7 +3,7 @@ import asyncio
 import service
 import worker
 
-logger = service.logEvent(__file__)
+logger = service.logEvent(__name__)
 worker = worker.Downloader()
 
 

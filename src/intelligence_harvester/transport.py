@@ -6,7 +6,7 @@ from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout, NatsE
 
 import service
 
-logger = service.logEvent(__file__)
+logger = service.logEvent(__name__)
 
 
 class MQ:

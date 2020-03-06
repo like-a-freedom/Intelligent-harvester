@@ -1,0 +1,2 @@
+https://github.com/certtools/intelmq-feeds-documentation
+https://github.com/certtools/intelmq/blob/develop/docs/Data-Harmonization.md
