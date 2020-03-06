@@ -84,7 +84,7 @@ class MQ:
 
         try:
             await nats.connect(f"nats://{self.NATS_ADDRESS}:{self.NATS_PORT}")
-            await nats.publish("harvester", msg)
+            await nats.publish("storage", msg)
         except NatsError as e:
             logger.error("NATS error: " + e)
 

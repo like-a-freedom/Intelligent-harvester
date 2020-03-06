@@ -6,6 +6,7 @@ __pycache__/
 # Other stuff
 *.code-workspace
 .vscode
+feeds-test.yml
 data/
 ioc.db
 iocs.db
