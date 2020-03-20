@@ -5,4 +5,7 @@ SYSTEM:
 
 DB:
   DB_ADDRESS: 192.168.20.70
+  #DB_ADDRESS: 10.2.5.230
   DB_PORT: 8123
+  DATABASE_NAME: intelligent_harvester
+  TABLE_NAME: indicators

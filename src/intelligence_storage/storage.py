@@ -31,17 +31,37 @@ class ClickHouse:
         self.settings = service.loadConfig("config/settings.yml")
         self.DB_ADDRESS = str(self.settings["DB"]["DB_ADDRESS"])
         self.DB_PORT = str(self.settings["DB"]["DB_PORT"])
+        self.DB_NAME = str(self.settings["DB"]["DATABASE_NAME"])
+        self.DB_TABLE_NAME = str(self.settings["DB"]["TABLE_NAME"])
+        logger.info(
+            f"Intelligent storage service: storage configuration loaded. DB on {self.DB_ADDRESS}:{self.DB_PORT}"
+        )
+
+    async def createDatabase(self, client: ChClient, database_name: str):
+        """
+        Creates the table if it does not exists
+        :param client: ClickHouse client object
+        :param database_name: A name of the database have to be created
+        """
+        sql = f"CREATE DATABASE IF NOT EXISTS {database_name}"
+
+        try:
+            await self.client.execute(sql)
+        except ChClientError as e:
+            logger.error(f"Error when creating the database: {e}")
 
     async def createTable(self, client: ChClient, table_name: str):
         """
         Creates the table if it does not exists
         :param client: ClickHouse client object
-        :param table_name: A name of the table that will be created
+        :param table_name: A name of the table have to be created
         """
         sql = f"CREATE TABLE IF NOT EXISTS {table_name} ( \
                     feed_name String, \
                     type String, \
-                    value String \
+                    value String, \
+                    collected Nullable(DateTime), \
+                    updated Nullable(DateTime) \
                 ) \
                 ENGINE = Memory"
 
@@ -50,7 +70,7 @@ class ClickHouse:
         except ChClientError as e:
             logger.error(f"Error when creating the table: {e}")
 
-    async def insert(self, msg: object = None):
+    async def insert(self, msg: object):
         """
         Inserts given object into database
         :param msg: Message object
@@ -66,10 +86,15 @@ class ClickHouse:
             )
             assert await self.client.is_alive()
 
-            await self.createTable(self.client, table_name="indicators")
+            await self.createDatabase(self.client, database_name=self.DB_NAME)
+            await self.createTable(
+                self.client, table_name=self.DB_NAME + "." + self.DB_TABLE_NAME
+            )
 
             generator = [item for item in self.prepareObject(msg)]
             values = ", ".join(map(str, generator))
+
+            # print(f"\nVALUES: {values}")
 
             try:
                 await self.client.execute(f"INSERT INTO indicators VALUES {values}")
@@ -82,13 +107,11 @@ class ClickHouse:
         Converts message from MQ to the format
         appropriate for insert into database
         :param msg: Message object
-        :returns: tuple of items
+        :returns: Tuple of IOC attributes
         """
-        for k, v in msg["feed_data"].items():
-            for item in v:
-                yield (msg["feed_name"], k, item)
-
-
-if __name__ == "__main__":
-    ch = ClickHouse()
-    asyncio.run(ch.insert())
+        if isinstance(msg, list):
+            for item in msg:
+                yield tuple(item.values())
+        else:
+            logger.error(f"MQ msg is not a dict: {msg}")
+            raise TypeError("MQ msg is not a dict")

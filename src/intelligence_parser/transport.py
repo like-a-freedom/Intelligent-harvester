@@ -3,6 +3,7 @@ import json
 import signal
 
 from nats.aio.client import Client as NATS
+from stan.aio.client import Client as STAN
 from nats.aio.errors import NatsError
 
 import service
@@ -15,9 +16,9 @@ worker = Processor()
 
 
 class MQ:
-    def __init__(self, loop=asyncio.get_event_loop()):
+    def __init__(self):
         self.nats = NATS()
-        self.loop = loop
+        self.stan = STAN()
 
         self.settings = service.loadConfig("config/settings.yml")
 
@@ -25,18 +26,17 @@ class MQ:
         self.NATS_PORT = str(self.settings["SYSTEM"]["NATS_PORT"])
 
         self.loop = asyncio.get_event_loop()
-        self.future = asyncio.Future()
 
-        logger.info("Configuration loaded")
+        logger.info("Intelligent parser: configuration loaded")
 
     async def getMsgFromMQ(self):
         """
         Receive feed chunks from NATS MQ
         """
-        nats = NATS()
+        # nats = NATS()
 
         async def closed_cb():
-            print("Connection to NATS is closed.")
+            print("Connection to NATS is closed")
             await asyncio.sleep(0.1, loop=self.loop)
             self.loop.stop()
 
@@ -45,26 +45,33 @@ class MQ:
             "closed_cb": closed_cb,
         }
 
-        await nats.connect(**options)
-        print(f"Connected to NATS at {nats.connected_url.netloc}...")
+        await self.nats.connect(**options)
+        await self.stan.connect("", "parser", nats=self.nats)
+        print(
+            f"Intelligent parser: connected to NATS at {self.nats.connected_url.netloc}..."
+        )
 
         async def subscribe_handler(msg):
-            subject = msg.subject
+            # subject = msg.subject
             data = json.loads((msg.data).decode())
             # DEBUG ONLY
             # print(f"\nReceived a message on '{subject}':\n{data}")
             await worker.opensource_feed_processor(data)
 
         try:
-            await nats.subscribe("harvester", cb=subscribe_handler)
+            # await self.nats.subscribe("harvester", cb=subscribe_handler)
+            await self.stan.subscribe(
+                "harvester", start_at="first", cb=subscribe_handler
+            )
         except NatsError as e:
             logger.error("NATS connection closed: " + e)
 
         def signal_handler():
-            if nats.is_closed:
+            if self.nats.is_closed:
                 return
             print("Disconnecting...")
-            self.loop.create_task(nats.close())
+            self.loop.create_task(self.stan.close())
+            self.loop.create_task(self.nats.close())
 
         for sig in ("SIGINT", "SIGTERM"):
             self.loop.add_signal_handler(getattr(signal, sig), signal_handler)
@@ -81,17 +88,19 @@ class MQ:
         Send parsed feed chunks to NATS MQ
         """
 
-        nats = NATS()
+        # nats = NATS()
         msg = json.dumps(msg).encode()
 
         try:
-            await nats.connect(f"nats://{self.NATS_ADDRESS}:{self.NATS_PORT}")
-            await nats.publish("parser", msg)
+            await self.nats.connect(f"nats://{self.NATS_ADDRESS}:{self.NATS_PORT}")
+            await self.stan.connect("", "parser", nats=self.nats)
+            # await self.nats.publish("parser", msg)
+            await self.stan.publish("parser", msg)
         except NatsError as e:
             logger.error("NATS error: " + e)
 
-        # await nats.flush()
-        await nats.close()
+        await self.stan.close()
+        await self.nats.close()
 
     def publish(self, msg: object):
         self.loop.run_until_complete(self.sendMsgToMQ(msg))

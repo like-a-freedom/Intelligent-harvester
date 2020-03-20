@@ -11,6 +11,8 @@ import storage
 logger = service.logEvent(__name__)
 storage = storage.ClickHouse()
 
+# Docs: https://github.com/nats-io/nats.py/issues/99
+
 
 class MQ:
     def __init__(self, loop=asyncio.get_event_loop()):
@@ -23,9 +25,10 @@ class MQ:
         self.NATS_PORT = str(self.settings["SYSTEM"]["NATS_PORT"])
 
         self.loop = asyncio.get_event_loop()
-        self.future = asyncio.Future()
 
-        logger.info("Configuration loaded")
+        logger.info(
+            f"Intelligent storage service: transport configuration loaded. NATS on {self.NATS_ADDRESS}:{self.NATS_PORT}"
+        )
 
     async def getMsgFromMQ(self):
         """
@@ -44,7 +47,9 @@ class MQ:
         }
 
         await nats.connect(**options)
-        print(f"Connected to NATS at {nats.connected_url.netloc}...")
+        print(
+            f"Intelligent storage: connected to NATS at {nats.connected_url.netloc}..."
+        )
 
         async def subscribe_handler(msg):
             subject = msg.subject
@@ -56,7 +61,7 @@ class MQ:
         try:
             await nats.subscribe("storage", cb=subscribe_handler)
         except NatsError as e:
-            logger.error("NATS connection closed: " + e)
+            logger.error("Intelligent storage: NATS connection closed: " + e)
 
         def signal_handler():
             if nats.is_closed:
@@ -66,13 +71,6 @@ class MQ:
 
         for sig in ("SIGINT", "SIGTERM"):
             self.loop.add_signal_handler(getattr(signal, sig), signal_handler)
-
-    def subscribe(self):
-        self.loop.run_until_complete(self.getMsgFromMQ())
-        try:
-            self.loop.run_forever()
-        finally:
-            self.loop.close()
 
     async def sendMsgToMQ(self, msg: dict):
         """
@@ -88,8 +86,14 @@ class MQ:
         except NatsError as e:
             logger.error("NATS error: " + e)
 
-        await nats.flush()
         await nats.close()
+
+    def subscribe(self):
+        self.loop.run_until_complete(self.getMsgFromMQ())
+        try:
+            self.loop.run_forever()
+        finally:
+            self.loop.close()
 
     def publish(self, msg: object):
         self.loop.run_until_complete(self.sendMsgToMQ(msg))

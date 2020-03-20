@@ -13,8 +13,7 @@ self.NATS_PORT = os.getenv('NATS_PORTS') or settings["SYSTEM"]["NATS_PORT"]
 self.LOG_LEVEL = os.getenv('LOG_LEVEL') or config['SYSTEM']['LOG_LEVEL']
 """
 
-logger.info("Intelligent storage configuration loaded")
-logger.info("Intelligent storage: it's time to store some feeds")
+logger.info("Intelligent storage service: it's time to store some feeds")
 
 
 def listenMQ():

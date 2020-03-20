@@ -2,7 +2,6 @@ import asyncio
 import json
 import os
 from datetime import datetime, timedelta
-from multiprocessing import Pool as ProcessPool
 from time import time
 
 import aiodns
@@ -43,7 +42,6 @@ class Downloader:
         # TODO: Try to use aiohttp to make async get such as `r = yield from aiohttp.get() yield from r.text()`
         total_chunks: int = 0
         time_start = time()
-        # print(feed)
 
         async with session.get(feed["feed_url"], allow_redirects=True) as response:
             if response.status == 200:
@@ -79,48 +77,6 @@ class Downloader:
                     f"Feed `{feed['feed_name']}` can not be downloaded: {response.status}"
                 )
 
-    # TODO: remove as obsolete
-    def batchFeedDownload(self, feed: dict) -> list:
-        """
-        Downloads collection of feeds in parallel processes
-        :param feed: Feed object
-        """
-
-        cpu_count = config["SYSTEM"]["PROCESS_COUNT"]
-
-        logger.info("Download started in " + str(cpu_count) + " processes")
-
-        # Log download start time
-        downloadStartTime = datetime.now()
-        feedData: list = []
-
-        # Define process pool and start download feeds from feedPack in parallel processes
-        pool = ProcessPool(cpu_count)
-
-        # Download feeds in a number of separate processes
-        feedData = pool.map(self.getOsintFeed, feed)
-
-        # Log download end time
-        downloadTime = datetime.now() - downloadStartTime
-
-        # Calcuate total feeds size
-        totalFeedsSize: int = 0
-
-        for item in feedData:
-            totalFeedsSize += item["size"]
-
-        # Log results
-        logger.info(
-            "Successfully downloaded {0} feeds of {1} Kbytes in {2}".format(
-                len(feedData), round(totalFeedsSize, 1), downloadTime
-            )
-        )
-
-        pool.close()
-        pool.join()
-
-        return feedData
-
     async def getAllOsintFeeds(self, feeds: dict):
         """
         Downloads all opensource feeds from
@@ -142,12 +98,9 @@ class Downloader:
         """
         time_start = time()
 
-        loop = asyncio.get_event_loop()
         try:
-            loop.run_until_complete(self.getAllOsintFeeds(feeds))
+            asyncio.run(self.getAllOsintFeeds(feeds))
         finally:
-            # Shutdown the loop even if there is an exception
-            loop.close()
             logger.info(
                 f"Successfully downloaded and sent to MQ {len(feeds)} feeds in {round(time() - time_start, 1)} seconds"
             )

@@ -15,7 +15,7 @@ def logEvent(moduleName: str, log_level=logging.INFO) -> object:
         moduleName
     )  # another approach is to use `logger.propagate = False`
     if not len(logger.handlers):
-        handler = logging.FileHandler("parser.log")
+        handler = logging.FileHandler("normalizer.log")
         formatter = logging.Formatter(
             "%(asctime)s.%(msecs)03d - %(levelname)s - %(name)s: %(message)s",
             datefmt="%d-%m-%Y %H:%M:%S",

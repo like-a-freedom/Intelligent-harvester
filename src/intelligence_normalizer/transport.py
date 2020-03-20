@@ -3,6 +3,7 @@ import json
 import signal
 
 from nats.aio.client import Client as NATS
+from stan.aio.client import Client as STAN
 from nats.aio.errors import NatsError
 
 import service
@@ -25,7 +26,6 @@ class MQ:
         self.NATS_PORT = str(self.settings["SYSTEM"]["NATS_PORT"])
 
         self.loop = asyncio.get_event_loop()
-        self.future = asyncio.Future()
 
         logger.info("Intelligent normalizer: configuration loaded")
 
@@ -55,12 +55,12 @@ class MQ:
             data = json.loads((msg.data).decode())
             # DEBUG ONLY
             # print(f"\nReceived a message on '{subject}':\n{data}")
-            await worker.opensource_feed_processor(data)
+            await worker.normalize(data)
 
         try:
             await nats.subscribe("parser", cb=subscribe_handler)
         except NatsError as e:
-            logger.error("Intelligent normalizer: NATS connection closed: " + e)
+            logger.error("Intelligent normalizer: NATS connection closed. " + e)
 
         def signal_handler():
             if nats.is_closed:
@@ -70,13 +70,6 @@ class MQ:
 
         for sig in ("SIGINT", "SIGTERM"):
             self.loop.add_signal_handler(getattr(signal, sig), signal_handler)
-
-    def subscribe(self):
-        self.loop.run_until_complete(self.getMsgFromMQ())
-        try:
-            self.loop.run_forever()
-        finally:
-            self.loop.close()
 
     async def sendMsgToMQ(self, msg: dict):
         """
@@ -90,9 +83,16 @@ class MQ:
             await nats.connect(f"nats://{self.NATS_ADDRESS}:{self.NATS_PORT}")
             await nats.publish("storage", msg)
         except NatsError as e:
-            logger.error("Intellgent normalizer: NATS error: " + e)
+            logger.error("Intellgent normalizer: NATS error. " + e)
 
         await nats.close()
+
+    def subscribe(self):
+        self.loop.run_until_complete(self.getMsgFromMQ())
+        try:
+            self.loop.run_forever()
+        finally:
+            self.loop.close()
 
     def publish(self, msg: object):
         self.loop.run_until_complete(self.sendMsgToMQ(msg))

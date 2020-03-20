@@ -44,63 +44,63 @@ COMMUNITY_FEEDS:
     - url: https://isc.sans.edu/feeds/topips.txt
     - type: txt
 
-  # Ramsomware tracker (Abuse Ch), confidence 50
-  ransomwaretrackerAbuseChFeed:
-    - url: https://ransomwaretracker.abuse.ch/feeds/csv/
-    - type: txt
-  ransomwaretrackerAbuseChUrlBL:
-    - url: https://ransomwaretracker.abuse.ch/downloads/RW_URLBL.txt
-    - type: txt
-  ransomwaretrackerAbuseChIpBL:
-    - url: https://ransomwaretracker.abuse.ch/downloads/RW_IPBL.txt
-    - type: txt
-  ransomwaretrackerAbuseChDomainsBL:
-    - url: https://ransomwaretracker.abuse.ch/downloads/RW_DOMBL.txt
-    - type: txt
-  ransomwaretrackerAbuseChUrlLockyBL:
-    - url: https://ransomwaretracker.abuse.ch/downloads/LY_DS_URLBL.txt
-    - type: txt
-  ransomwaretrackerAbuseChUrlTeslaCryptBL:
-    - url: https://ransomwaretracker.abuse.ch/downloads/TC_C2_URLBL.txt
-    - type: txt
-  ransomwaretrackerAbuseChUrlTeslaCryptDistributionList:
-    - url: https://ransomwaretracker.abuse.ch/downloads/TC_DS_URLBL.txt
-    - type: txt
-  ransomwaretrackerAbuseChUrlPaymentSitesBL:
-    - url: https://ransomwaretracker.abuse.ch/downloads/LY_PS_IPBL.txt
-    - type: txt
-  ransomwaretrackerAbuseChTorrentLockerPaymentSites:
-    - url: https://ransomwaretracker.abuse.ch/downloads/TL_PS_DOMBL.txt
-    - type: txt
-  ransomwaretrackerAbuseChTorrentLockerRansomware:
-    - url: https://ransomwaretracker.abuse.ch/downloads/TL_C2_DOMBL.txt
-    - type: txt
-  ransomwaretrackerAbuseChTeslaCrypsPaymentSitesDOMBL:
-    - url: https://ransomwaretracker.abuse.ch/downloads/TC_PS_DOMBL.txt
-    - type: txt
-  ransomwaretrackerAbuseChCryptoWallURLBL:
-    - url: https://ransomwaretracker.abuse.ch/downloads/CW_C2_URLBL.txt
-    - type: txt
-  ransomwaretrackerAbuseChCryptoWallPaymentSites:
-    - url: https://ransomwaretracker.abuse.ch/downloads/CW_PS_DOMBL.txt
-    - type: txt
-  ransomwaretrackerAbuseChLockyRansomwarePaymentSitesDOMBL:
-    - url: https://ransomwaretracker.abuse.ch/downloads/LY_PS_DOMBL.txt
-    - type: txt
-  ransomwaretrackerAbuseChLockyRansomwareDOMBL:
-    - url: https://ransomwaretracker.abuse.ch/downloads/LY_C2_DOMBL.txt
-    - type: txt
+  # # Ramsomware tracker (Abuse Ch), confidence 50 — DISCONTINUED
+  # ransomwaretrackerAbuseChFeed:
+  #   - url: https://ransomwaretracker.abuse.ch/feeds/csv/
+  #   - type: txt
+  # ransomwaretrackerAbuseChUrlBL:
+  #   - url: https://ransomwaretracker.abuse.ch/downloads/RW_URLBL.txt
+  #   - type: txt
+  # ransomwaretrackerAbuseChIpBL:
+  #   - url: https://ransomwaretracker.abuse.ch/downloads/RW_IPBL.txt
+  #   - type: txt
+  # ransomwaretrackerAbuseChDomainsBL:
+  #   - url: https://ransomwaretracker.abuse.ch/downloads/RW_DOMBL.txt
+  #   - type: txt
+  # ransomwaretrackerAbuseChUrlLockyBL:
+  #   - url: https://ransomwaretracker.abuse.ch/downloads/LY_DS_URLBL.txt
+  #   - type: txt
+  # ransomwaretrackerAbuseChUrlTeslaCryptBL:
+  #   - url: https://ransomwaretracker.abuse.ch/downloads/TC_C2_URLBL.txt
+  #   - type: txt
+  # ransomwaretrackerAbuseChUrlTeslaCryptDistributionList:
+  #   - url: https://ransomwaretracker.abuse.ch/downloads/TC_DS_URLBL.txt
+  #   - type: txt
+  # ransomwaretrackerAbuseChUrlPaymentSitesBL:
+  #   - url: https://ransomwaretracker.abuse.ch/downloads/LY_PS_IPBL.txt
+  #   - type: txt
+  # ransomwaretrackerAbuseChTorrentLockerPaymentSites:
+  #   - url: https://ransomwaretracker.abuse.ch/downloads/TL_PS_DOMBL.txt
+  #   - type: txt
+  # ransomwaretrackerAbuseChTorrentLockerRansomware:
+  #   - url: https://ransomwaretracker.abuse.ch/downloads/TL_C2_DOMBL.txt
+  #   - type: txt
+  # ransomwaretrackerAbuseChTeslaCrypsPaymentSitesDOMBL:
+  #   - url: https://ransomwaretracker.abuse.ch/downloads/TC_PS_DOMBL.txt
+  #   - type: txt
+  # ransomwaretrackerAbuseChCryptoWallURLBL:
+  #   - url: https://ransomwaretracker.abuse.ch/downloads/CW_C2_URLBL.txt
+  #   - type: txt
+  # ransomwaretrackerAbuseChCryptoWallPaymentSites:
+  #   - url: https://ransomwaretracker.abuse.ch/downloads/CW_PS_DOMBL.txt
+  #   - type: txt
+  # ransomwaretrackerAbuseChLockyRansomwarePaymentSitesDOMBL:
+  #   - url: https://ransomwaretracker.abuse.ch/downloads/LY_PS_DOMBL.txt
+  #   - type: txt
+  # ransomwaretrackerAbuseChLockyRansomwareDOMBL:
+  #   - url: https://ransomwaretracker.abuse.ch/downloads/LY_C2_DOMBL.txt
+  #   - type: txt
 
-  # Zeus tracker
-  zeustrackerAbuseChDomainsBL:
-    - url: https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist
-    - type: txt
-  zeustrackerAbuseChIpBL:
-    - url: https://zeustracker.abuse.ch/blocklist.php?download=ipblocklist
-    - type: txt
-  zeustrackerAbuseCompromisedURLs:
-    - url: https://zeustracker.abuse.ch/blocklist.php?download=compromised
-    - type: txt
+  # # Zeus tracker - DISCONTINUED
+  # zeustrackerAbuseChDomainsBL:
+  #   - url: https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist
+  #   - type: txt
+  # zeustrackerAbuseChIpBL:
+  #   - url: https://zeustracker.abuse.ch/blocklist.php?download=ipblocklist
+  #   - type: txt
+  # zeustrackerAbuseCompromisedURLs:
+  #   - url: https://zeustracker.abuse.ch/blocklist.php?download=compromised
+  #   - type: txt
 
   # Emerging threats
   emergingThreatsBL:
@@ -649,3 +649,6 @@ COMMUNITY_FEEDS:
   # MISP feeds
   #  https://www.circl.lu/doc/misp/feed-osint/
   #  https://feeds.inthreat.com/osint/
+  # MrLooquer feed
+  #  https://iocfeed.mrlooquer.com/feed.json
+  #  https://iocfeed.mrlooquer.com/feed.csv

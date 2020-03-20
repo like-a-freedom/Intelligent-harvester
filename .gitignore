@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 # Other stuff
+iocs.json
 *.code-workspace
 .vscode
 feeds-test.yml
@@ -13,6 +14,8 @@ iocs.db
 iocs.db-journal
 harvester.log
 parser.log
+normalizer.log
+storage.log
 misp.db
 indicators.txt
 indicators.large.4m.txt

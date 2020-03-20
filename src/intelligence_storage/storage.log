@@ -1,15 +1,63 @@
-04-03-2020 11:11:59.986 - INFO - __main__: Intelligent storage configuration loaded
-04-03-2020 11:11:59.986 - INFO - __main__: Intelligent storage: it's time to store some feeds
-04-03-2020 11:12:00.206 - INFO - transport: Configuration loaded
-04-03-2020 11:19:00.121 - INFO - __main__: Intelligent storage configuration loaded
-04-03-2020 11:19:00.121 - INFO - __main__: Intelligent storage: it's time to store some feeds
-04-03-2020 11:19:00.322 - INFO - transport: Configuration loaded
-04-03-2020 11:21:17.106 - INFO - __main__: Intelligent storage configuration loaded
-04-03-2020 11:21:17.106 - INFO - __main__: Intelligent storage: it's time to store some feeds
-04-03-2020 11:21:17.356 - INFO - transport: Configuration loaded
-04-03-2020 12:11:47.308 - INFO - __main__: Intelligent storage configuration loaded
-04-03-2020 12:11:47.310 - INFO - __main__: Intelligent storage: it's time to store some feeds
-04-03-2020 12:11:47.593 - INFO - transport: Configuration loaded
-04-03-2020 12:30:11.659 - INFO - __main__: Intelligent storage configuration loaded
-04-03-2020 12:30:11.660 - INFO - __main__: Intelligent storage: it's time to store some feeds
-04-03-2020 12:30:11.915 - INFO - transport: Configuration loaded
+16-03-2020 21:56:54.467 - INFO - __main__: Intelligent storage service: it's time to store some feeds
+16-03-2020 21:56:54.668 - INFO - storage: Intelligent storage service: storage configuration loaded. DB on 192.168.20.70:8123
+16-03-2020 21:56:54.670 - INFO - transport: Intelligent storage service: transport configuration loaded. NATS on 192.168.20.70:4222
+16-03-2020 21:56:57.998 - ERROR - storage: Error when insert the data: Code: 81, e.displayText() = DB::Exception: Database intelligent_harvester doesn't exist (version 20.1.4.14 (official build))
+
+16-03-2020 21:56:58.418 - ERROR - storage: Error when insert the data: Code: 81, e.displayText() = DB::Exception: Database intelligent_harvester doesn't exist (version 20.1.4.14 (official build))
+
+16-03-2020 21:56:58.658 - ERROR - storage: Error when insert the data: Code: 81, e.displayText() = DB::Exception: Database intelligent_harvester doesn't exist (version 20.1.4.14 (official build))
+
+16-03-2020 21:56:59.602 - ERROR - storage: Error when insert the data: Code: 81, e.displayText() = DB::Exception: Database intelligent_harvester doesn't exist (version 20.1.4.14 (official build))
+
+16-03-2020 22:17:18.734 - INFO - __main__: Intelligent storage service: it's time to store some feeds
+16-03-2020 22:17:18.901 - INFO - storage: Intelligent storage service: storage configuration loaded. DB on 192.168.20.70:8123
+16-03-2020 22:20:27.656 - INFO - __main__: Intelligent storage service: it's time to store some feeds
+16-03-2020 22:20:27.838 - INFO - storage: Intelligent storage service: storage configuration loaded. DB on 192.168.20.70:8123
+16-03-2020 22:21:27.736 - INFO - __main__: Intelligent storage service: it's time to store some feeds
+16-03-2020 22:21:27.908 - INFO - storage: Intelligent storage service: storage configuration loaded. DB on 192.168.20.70:8123
+16-03-2020 22:23:26.781 - INFO - __main__: Intelligent storage service: it's time to store some feeds
+16-03-2020 22:23:26.942 - INFO - storage: Intelligent storage service: storage configuration loaded. DB on 192.168.20.70:8123
+16-03-2020 22:29:06.735 - INFO - __main__: Intelligent storage service: it's time to store some feeds
+16-03-2020 22:29:06.901 - INFO - storage: Intelligent storage service: storage configuration loaded. DB on 192.168.20.70:8123
+16-03-2020 22:29:06.903 - INFO - transport: Intelligent storage service: transport configuration loaded. NATS on 192.168.20.70:4222
+16-03-2020 22:29:10.268 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:29:10.537 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:29:10.685 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:29:11.035 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:29:11.403 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:29:12.258 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:32:58.638 - INFO - __main__: Intelligent storage service: it's time to store some feeds
+16-03-2020 22:32:58.829 - INFO - storage: Intelligent storage service: storage configuration loaded. DB on 192.168.20.70:8123
+16-03-2020 22:32:58.831 - INFO - transport: Intelligent storage service: transport configuration loaded. NATS on 192.168.20.70:4222
+16-03-2020 22:33:01.806 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:33:01.962 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:33:02.525 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:33:02.664 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:33:03.772 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:35:41.652 - INFO - __main__: Intelligent storage service: it's time to store some feeds
+16-03-2020 22:35:41.860 - INFO - storage: Intelligent storage service: storage configuration loaded. DB on 192.168.20.70:8123
+16-03-2020 22:35:41.862 - INFO - transport: Intelligent storage service: transport configuration loaded. NATS on 192.168.20.70:4222
+16-03-2020 22:35:44.576 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:35:44.936 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:35:45.182 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:35:45.929 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:35:46.533 - ERROR - storage: Error when insert the data: Code: 47, e.displayText() = DB::Exception: Missing columns: 'None' while processing query: 'None', required columns: 'None', source columns: '_dummy' (version 20.1.4.14 (official build))
+
+16-03-2020 22:36:27.354 - INFO - __main__: Intelligent storage service: it's time to store some feeds
+16-03-2020 22:36:27.552 - INFO - storage: Intelligent storage service: storage configuration loaded. DB on 192.168.20.70:8123
+16-03-2020 22:36:27.554 - INFO - transport: Intelligent storage service: transport configuration loaded. NATS on 192.168.20.70:4222

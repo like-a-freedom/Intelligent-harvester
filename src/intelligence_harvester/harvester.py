@@ -8,7 +8,7 @@ worker = worker.Downloader()
 
 
 def loadConfig():
-    return service.loadConfig("config/feeds-test.yml")
+    return service.loadConfig("config/feeds.yml")
 
 
 def loadFeeds() -> list:
