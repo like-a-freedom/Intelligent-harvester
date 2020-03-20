@@ -55,7 +55,8 @@ class FeedParser:
 
         ### Setup patterns for extraction
         url_pattern = self.Utils.guessIocType(self, "URL")
-        ip_pattern = self.Utils.guessIocType(self, "ipv4")
+        ipv4_pattern = self.Utils.guessIocType(self, "ipv4")
+        ipv6_pattern = self.Utils.guessIocType(self, "ipv6")
         domain_pattern = self.Utils.guessIocType(self, "domain")
         email_pattern = self.Utils.guessIocType(self, "email")
         regkey_pattern = self.Utils.guessIocType(self, "regkey")
@@ -70,7 +71,8 @@ class FeedParser:
 
         ### Declare temp list vars to store IOCs
         # url_list: list = []
-        ip_list: list = []
+        ipv4_list: list = []
+        ipv6_list: list = []
         domain_list: list = []
         email_list: list = []
         regkey_list: list = []
@@ -87,7 +89,8 @@ class FeedParser:
 
         ### Iterate over the lists and match IOCs
         url_list = list(filter(url_pattern.match, feed["feed_data"]))
-        ip_list = list(filter(ip_pattern.match, feed["feed_data"]))
+        ipv4_list = list(filter(ipv4_pattern.match, feed["feed_data"]))
+        ipv6_list = list(filter(ipv6_pattern.match, feed["feed_data"]))
         domain_list = list(filter(domain_pattern.match, feed["feed_data"]))
         email_list = list(filter(email_pattern.match, feed["feed_data"]))
         regkey_list = list(filter(regkey_pattern.match, feed["feed_data"]))
@@ -103,7 +106,8 @@ class FeedParser:
         total_time = round(time() - time_start, 1)
 
         total_parsed = (
-            len(ip_list)
+            len(ipv4_list)
+            + len(ipv6_list)
             + len(url_list)
             + len(domain_list)
             + len(email_list)
@@ -148,7 +152,8 @@ class FeedParser:
 
         # parsed_dict["source"] = feed["source"]
         # parsed_dict["totalIocs"] = total_parsed
-        parsed_dict["ip"] = ip_list
+        parsed_dict["ipv4"] = ipv4_list
+        parsed_dict["ipv6"] = ipv6_list
         parsed_dict["url"] = url_list
         parsed_dict["domain"] = domain_list
         parsed_dict["email"] = email_list
@@ -204,12 +209,10 @@ class FeedParser:
         for item in parsed_data:
             total_parsed += item["total_iocs"]
 
-        """
         # Log results
-        logger.info(
+        logger.debug(
             f"Successfully parsed chunk of {len(feed)} bytes of {total_parsed} IoCs in {total_time}"
         )
-        """
 
         # pool.close()
         # pool.join()
@@ -217,7 +220,7 @@ class FeedParser:
         return parsed_data
 
     class Utils:
-        def parseIP(
+        def parseIPv4(
             self, indicator: str
         ) -> str:  # TODO: remove this method as obsolete
             """
@@ -240,6 +243,7 @@ class FeedParser:
 
             ioc_patterns = {
                 "ipv4": r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$",
+                "ipv6": r"^([0-9A-Fa-f]{0,4}:){2,7}([0-9A-Fa-f]{1,4}$|((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4})$",
                 "domain": r"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}",
                 "md5": r"\b([a-f0-9]{32}|[A-F0-9]{32})\b",
                 "sha1": r"\b([0-9a-f]{40}|[0-9A-F]{40})\b",
