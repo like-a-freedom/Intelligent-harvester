@@ -564,6 +564,9 @@ COMMUNITY_FEEDS:
   IP Sum No FP 03:
     - url: https://raw.githubusercontent.com/stamparm/ipsum/master/levels/8.txt
     - type: txt
+  microsoftCOVID19:
+    - url: https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Sample%20Data/Feeds/Microsoft.Covid19.Indicators.csv
+    - type: csv
 
   # Large feeds below
 
@@ -623,6 +626,7 @@ COMMUNITY_FEEDS:
   # TODO: Maltrail: (a number of sources inside each repository)
   # TODO: http://www.darklist.de/raw.php    # confidence 70
   # TODO: https://isc.sans.edu/api/threatlist/miner/ #  XML, confidence 70
+  # TODO: https://www.rstcloud.net/freefeed
   #  https://github.com/stamparm/maltrail/tree/master/trails/static/suspicious
   #  https://github.com/stamparm/maltrail/tree/master/trails/static/malware
   #  http://www.wildlist.org/CurrentList.txt
@@ -652,3 +656,11 @@ COMMUNITY_FEEDS:
   # MrLooquer feed
   #  https://iocfeed.mrlooquer.com/feed.json
   #  https://iocfeed.mrlooquer.com/feed.csv
+  # ViriBack - unsafe sites
+  #  http://tracker.viriback.com/dump.php
+  # Other
+  #  http://dsi.ut-capitole.fr/blacklists/download
+  #  https://www.turris.cz/greylist-data/greylist-latest.csv
+  #  Campaings: https://github.com/CyberMonitor/APT_CyberCriminal_Campagin_Collections
+  #  APT Notes: https://github.com/aptnotes/data
+  #  https://github.com/hxFrost/Malware-Analysis-Tools

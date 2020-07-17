@@ -1,11 +1,9 @@
 SYSTEM:
-  NATS_ADDRESS: 192.168.20.70
-  #NATS_ADDRESS: demo.nats.io
-  NATS_PORT: 4222
+  NATS_ADDRESS: ti.rv.lab
+  NATS_PORT: 4223
 
 DB:
   DB_ADDRESS: 192.168.20.70
-  #DB_ADDRESS: 10.2.5.230
   DB_PORT: 8123
   DATABASE_NAME: intelligent_harvester
   TABLE_NAME: indicators

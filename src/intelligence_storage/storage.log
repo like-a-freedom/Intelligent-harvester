@@ -61,3 +61,6 @@
 16-03-2020 22:36:27.354 - INFO - __main__: Intelligent storage service: it's time to store some feeds
 16-03-2020 22:36:27.552 - INFO - storage: Intelligent storage service: storage configuration loaded. DB on 192.168.20.70:8123
 16-03-2020 22:36:27.554 - INFO - transport: Intelligent storage service: transport configuration loaded. NATS on 192.168.20.70:4222
+20-03-2020 17:44:18.275 - INFO - __main__: Intelligent storage service: it's time to store some feeds
+20-03-2020 17:44:18.561 - INFO - storage: Intelligent storage service: storage configuration loaded. DB on 192.168.20.70:8123
+20-03-2020 17:44:18.562 - INFO - transport: Intelligent storage service: transport configuration loaded. NATS on 192.168.20.70:4222

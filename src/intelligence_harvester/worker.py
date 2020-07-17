@@ -6,6 +6,7 @@ from time import time
 
 import aiodns
 import aiohttp
+import httpx
 import requests
 
 # Dirty fix to ignore HTTPS warnings
@@ -16,6 +17,7 @@ import transport
 
 urllib3.disable_warnings()
 # ----------------------------------
+# https://gist.github.com/Den1al/2ede0c38fa4bc486d1791d86bcf9034e
 
 """ TODO:
 self.NATS_ADDRESS = os.getenv('NATS_ADDRESS') or settings["SYSTEM"]["NATS_ADDRESS"]
@@ -32,50 +34,52 @@ LIST_CHUNK_SIZE = 1000
 
 
 class Downloader:
-    async def getOsintFeed(self, session: aiohttp.ClientSession, feed: dict):
+    async def getFeed(self, feed: dict):
         """
         Download the feed specified. Just get the feed of its own format without any parsing
         :param session: aiohttp ClientSession
         :param feed: Feed object
         :return: Feed object 
         """
-        # TODO: Try to use aiohttp to make async get such as `r = yield from aiohttp.get() yield from r.text()`
         total_chunks: int = 0
+        feed_size: int = 0
         time_start = time()
 
-        async with session.get(feed["feed_url"], allow_redirects=True) as response:
-            if response.status == 200:
+        client = httpx.AsyncClient()
+        async with client.stream(
+            "GET", feed["feed_url"], allow_redirects=True
+        ) as response:
+            if response.status_code == 200:
                 feed_chunk: dict = {}
-                while True:
-                    chunk = await response.content.read(FEED_CHUNK_SIZE)
-                    total_chunks += 1
-                    if not chunk:
-                        feed_download_time = round(time() - time_start, 1)
-                        feed_total_size = (total_chunks * FEED_CHUNK_SIZE) / 1024
-                        logger.info(
-                            f"Feed `{feed['feed_name']}` of {feed_total_size} Kbytes downloaded in {feed_download_time} seconds"
-                        )
-                        break
-
-                    # DEBUG ONLY BELOW
-                    """
-                    print(
-                        "\nCHUNK TYPE: ",
-                        type(chunk.decode()),
-                        "\nDOWNLOADED CHUNK:\n\n",
-                        chunk.decode(),
-                    )
-                    """
-
+                async for chunk in response.aiter_bytes():
+                    # data = asyncio.ensure_future(chunk)
                     feed_chunk["feed_name"] = feed["feed_name"]
                     feed_chunk["feed_type"] = feed["feed_type"]
                     feed_chunk["feed_data"] = chunk.decode()
 
-                    await transport.sendMsgToMQ(feed_chunk)
+                    # DEBUG ONLY BELOW
+                    print(feed_chunk)
+                    # DEBUG END
+
+                    feed_size += len(chunk)
+                    total_chunks += 1
+
+                    # await asyncio.sleep(1)
+                    # await transport.sendMsgToMQ(feed_chunk)
+
+                    if not chunk:
+                        feed_download_time = time() - time_start
+                        feed_total_size = (total_chunks * feed_size) / 1024
+                        logger.info(
+                            f"Feed `{feed['feed_name']}` of {feed_total_size:.2f} Kbytes downloaded in {feed_download_time:.2f} seconds"
+                        )
+                    # return feed_chunk
             else:
                 logger.error(
                     f"Feed `{feed['feed_name']}` can not be downloaded: {response.status}"
                 )
+
+        # await transport.sendMsgToMQ(results)
 
     async def getAllOsintFeeds(self, feeds: dict):
         """
@@ -83,13 +87,24 @@ class Downloader:
         configuration file and send it to MQ
         :param feeds: Feeds object
         """
-        async with aiohttp.ClientSession(
-            conn_timeout=3,
-            read_timeout=3,
-            connector=aiohttp.TCPConnector(verify_ssl=False),
-        ) as session:
-            data = [(self.getOsintFeed(session, feed)) for feed in feeds]
-            await asyncio.gather(*data, return_exceptions=True)
+        # async with aiohttp.ClientSession(
+        #     conn_timeout=3,
+        #     read_timeout=3,
+        #     connector=aiohttp.TCPConnector(verify_ssl=False),
+        # ) as session:
+        data = [(self.getFeed(feed)) for feed in feeds]
+        result = await asyncio.gather(*data, return_exceptions=True)
+        print(f"\n YOUR FEEDS: \n {result}")
+
+        # async with aiohttp.ClientSession(
+        #     conn_timeout=3,
+        #     read_timeout=3,
+        #     connector=aiohttp.TCPConnector(verify_ssl=False),
+        # ) as session:
+        #     tasks = []
+        #     for feed in feeds:
+        #         tasks.append(asyncio.create_task(self.getOsintFeed(session, feed)))
+        #     await asyncio.gather(*tasks, return_exceptions=True)
 
     def getFeeds(self, feeds: dict):
         """

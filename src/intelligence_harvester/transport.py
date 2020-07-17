@@ -18,7 +18,6 @@ class MQ:
 
         self.NATS_ADDRESS = str(self.settings["SYSTEM"]["NATS_ADDRESS"])
         self.NATS_PORT = str(self.settings["SYSTEM"]["NATS_PORT"])
-        self.NATS_STREAMING_PORT = str(self.settings["SYSTEM"]["NATS_STREAMING_PORT"])
 
         logger.info("Configuration loaded")
 
@@ -29,14 +28,28 @@ class MQ:
         """
         msg = json.dumps(msg).encode()
 
+        options = {
+            "servers": [f"nats://{self.NATS_ADDRESS}:{self.NATS_PORT}"],
+        }
+
+        # async def ack_handler(ack):
+        #   print(f"Received ack: {format(ack.guid)}")
+
         try:
-            await self.nats.connect(
-                "nats://" + self.NATS_ADDRESS + ":" + self.NATS_PORT
+            await self.nats.connect(**options)
+            await self.stan.connect("test-cluster", "harvester", nats=self.nats)
+            print(
+                f"Intelligent parser: connected to NATS at {self.nats.connected_url.netloc}..."
             )
-            await self.stan.connect("", "harvester", nats=self.nats)
-            await self.stan.publish("harvester", msg)
+            await self.stan.publish(
+                "harvester",
+                msg,
+                ack_handler=lambda ack: print(f"Msg sent, ack: {format(ack.guid)}"),
+            )
         except NatsError as e:
-            logger.error("NATS error: " + e)
+            logger.error(f"NATS error: {e}")
+
+        await asyncio.sleep(1)
 
         await self.stan.close()
         await self.nats.close()

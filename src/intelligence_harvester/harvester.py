@@ -1,5 +1,3 @@
-import asyncio
-
 import service
 import worker
 
@@ -8,7 +6,7 @@ worker = worker.Downloader()
 
 
 def loadConfig():
-    return service.loadConfig("config/feeds.yml")
+    return service.loadConfig("config/feeds-test.yml")
 
 
 def loadFeeds() -> list:
@@ -35,4 +33,3 @@ if __name__ == "__main__":
     # Start the worker and get all feeds
     logger.info("\nIntelligent harvester started: it's time to grab some feeds")
     worker.getFeeds(loadFeeds())
-

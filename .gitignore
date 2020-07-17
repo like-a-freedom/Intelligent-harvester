@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 # Other stuff
+stuff
 iocs.json
 *.code-workspace
 .vscode
