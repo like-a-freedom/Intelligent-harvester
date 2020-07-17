@@ -16,8 +16,6 @@ import service
 import transport
 
 urllib3.disable_warnings()
-# ----------------------------------
-# https://gist.github.com/Den1al/2ede0c38fa4bc486d1791d86bcf9034e
 
 """ TODO:
 self.NATS_ADDRESS = os.getenv('NATS_ADDRESS') or settings["SYSTEM"]["NATS_ADDRESS"]
@@ -52,7 +50,6 @@ class Downloader:
             if response.status_code == 200:
                 feed_chunk: dict = {}
                 async for chunk in response.aiter_bytes():
-                    # data = asyncio.ensure_future(chunk)
                     feed_chunk["feed_name"] = feed["feed_name"]
                     feed_chunk["feed_type"] = feed["feed_type"]
                     feed_chunk["feed_data"] = chunk.decode()
@@ -64,8 +61,7 @@ class Downloader:
                     feed_size += len(chunk)
                     total_chunks += 1
 
-                    # await asyncio.sleep(1)
-                    # await transport.sendMsgToMQ(feed_chunk)
+                    await transport.sendMsgToMQ(feed_chunk)
 
                     if not chunk:
                         feed_download_time = time() - time_start
@@ -73,13 +69,10 @@ class Downloader:
                         logger.info(
                             f"Feed `{feed['feed_name']}` of {feed_total_size:.2f} Kbytes downloaded in {feed_download_time:.2f} seconds"
                         )
-                    # return feed_chunk
             else:
                 logger.error(
                     f"Feed `{feed['feed_name']}` can not be downloaded: {response.status}"
                 )
-
-        # await transport.sendMsgToMQ(results)
 
     async def getAllOsintFeeds(self, feeds: dict):
         """
@@ -87,24 +80,9 @@ class Downloader:
         configuration file and send it to MQ
         :param feeds: Feeds object
         """
-        # async with aiohttp.ClientSession(
-        #     conn_timeout=3,
-        #     read_timeout=3,
-        #     connector=aiohttp.TCPConnector(verify_ssl=False),
-        # ) as session:
         data = [(self.getFeed(feed)) for feed in feeds]
         result = await asyncio.gather(*data, return_exceptions=True)
         print(f"\n YOUR FEEDS: \n {result}")
-
-        # async with aiohttp.ClientSession(
-        #     conn_timeout=3,
-        #     read_timeout=3,
-        #     connector=aiohttp.TCPConnector(verify_ssl=False),
-        # ) as session:
-        #     tasks = []
-        #     for feed in feeds:
-        #         tasks.append(asyncio.create_task(self.getOsintFeed(session, feed)))
-        #     await asyncio.gather(*tasks, return_exceptions=True)
 
     def getFeeds(self, feeds: dict):
         """
