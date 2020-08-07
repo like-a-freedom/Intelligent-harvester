@@ -591,8 +591,9 @@ COMMUNITY_FEEDS:
   SANSIP:
     - url: https://isc.sans.edu/ipsascii.html
     - type: txt
-  #
   # -----------------------------------------------------------
+  # TO DO feed below
+  #
   #
   # Cybercure feed — confidence 40
   # cybercureIpFeed:
@@ -610,9 +611,13 @@ COMMUNITY_FEEDS:
   # cybercrimeTracker:
   #   - url: http://cybercrime-tracker.net/all.php
   #   - type: csv
-  # dragonResearchGroupSSHPWAUTH: https://dragonresearchgroup.org/insight/sshpwauth.txt
-  # dragonResearchGroupVNCProbe: https://dragonresearchgroup.org/insight/vncprobe.txt
-  # SANSDailySources: https://isc.sans.edu/feeds/daily_sources
+  #
+  # TODO: CertPolandDomains: http://hole.cert.pl/domains/
+  # TODO: BerkeleyAggressiveIP: https://security.berkeley.edu/services/aggressive-ip-distribution-aid-list/documentation/get-list-aggressive-ip-addresses
+  # TODO: dragonResearchGroupSSHPWAUTH: https://dragonresearchgroup.org/insight/sshpwauth.txt
+  # TODO: dragonResearchGroupVNCProbe: https://dragonresearchgroup.org/insight/vncprobe.txt
+  # TODO: SANSDailySources: https://isc.sans.edu/feeds/daily_sources
+  # TODo: https://easylist-msie.adblockplus.org/malwaredomains_full.tpl
   # TODO: add from https://osint.digitalside.it
   # TODO: add from https://www.bountysource.com/issues/27821354-contribute-feeds-list
   # TODO: add from https://github.com/certtools/intelmq/issues/384

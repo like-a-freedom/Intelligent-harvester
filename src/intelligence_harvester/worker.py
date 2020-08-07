@@ -95,7 +95,7 @@ class Downloader:
             asyncio.run(self.getAllOsintFeeds(feeds))
         finally:
             logger.info(
-                f"Successfully downloaded and sent to MQ {len(feeds)} feeds in {round(time() - time_start, 1)} seconds"
+                f"Successfully downloaded and sent to MQ {len(feeds)} feeds in {(time() - time_start):.2f} seconds"
             )
 
     def makeChunks(self, list: list, size: int = LIST_CHUNK_SIZE) -> object:
