@@ -43,6 +43,9 @@ COMMUNITY_FEEDS:
   SANSTorExitNodes:
     - url: https://isc.sans.edu/feeds/topips.txt
     - type: txt
+  AbuseBazzar:
+    - url: https://bazaar.abuse.ch/export/csv/recent/
+    - type: csv
 
   # # Ramsomware tracker (Abuse Ch), confidence 50 — DISCONTINUED
   # ransomwaretrackerAbuseChFeed:
