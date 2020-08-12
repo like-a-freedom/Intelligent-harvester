@@ -46,6 +46,9 @@ COMMUNITY_FEEDS:
   AbuseBazzar:
     - url: https://bazaar.abuse.ch/export/csv/recent/
     - type: csv
+  FutexRe:
+    - url: https://futex.re/tracker/TinyTracker.csv
+    - type: csv
 
   # # Ramsomware tracker (Abuse Ch), confidence 50 — DISCONTINUED
   # ransomwaretrackerAbuseChFeed:
