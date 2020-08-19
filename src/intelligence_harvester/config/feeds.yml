@@ -617,7 +617,9 @@ COMMUNITY_FEEDS:
   # cybercrimeTracker:
   #   - url: http://cybercrime-tracker.net/all.php
   #   - type: csv
-  #
+  # 
+  # TODO: Support github feed: https://github.com/StrangerealIntel/DailyIOC
+  # TODO: Support STIX or MISP from DigitalSide TI: https://github.com/davidonzo/Threat-Intel
   # TODO: NovaSense TI feeds: https://novasense-threats.com/using/api
   # TODO: CertPolandDomains: http://hole.cert.pl/domains/
   # TODO: BerkeleyAggressiveIP: https://security.berkeley.edu/services/aggressive-ip-distribution-aid-list/documentation/get-list-aggressive-ip-addresses
