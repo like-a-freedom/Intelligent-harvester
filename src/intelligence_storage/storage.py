@@ -11,20 +11,6 @@ import service
 
 logger = service.logEvent(__name__)
 
-options = {
-    "url": "http://localhost:8123",
-    "user": "user",
-    "password": "password",
-    "database": "db",
-    "compress_response": True,
-}
-
-"""
-{'feed_name': 'SANSHighSuspiciousDomains', 
-    'feed_type': 'txt', 'feed_data': {'ip': [], 'url': [], 
-    'domain': ['3p.6ntrb6.top', 'sgowntfjwkybawi.pw'
-"""
-
 
 class ClickHouse:
     def __init__(self):
@@ -37,31 +23,31 @@ class ClickHouse:
             f"Intelligent storage service: storage configuration loaded. DB on {self.DB_ADDRESS}:{self.DB_PORT}"
         )
 
-    async def createDatabase(self, client: ChClient, database_name: str):
+    async def createDatabase(self, client: ChClient):
         """
         Creates the table if it does not exists
         :param client: ClickHouse client object
         :param database_name: A name of the database have to be created
         """
-        sql = f"CREATE DATABASE IF NOT EXISTS {database_name}"
+        sql = f"CREATE DATABASE IF NOT EXISTS {self.DB_NAME}"
 
         try:
             await self.client.execute(sql)
         except ChClientError as e:
             logger.error(f"Error when creating the database: {e}")
 
-    async def createTable(self, client: ChClient, table_name: str):
+    async def createTable(self, client: ChClient):
         """
         Creates the table if it does not exists
         :param client: ClickHouse client object
         :param table_name: A name of the table have to be created
         """
-        sql = f"CREATE TABLE IF NOT EXISTS {table_name} ( \
+        sql = f"CREATE TABLE IF NOT EXISTS {self.DB_NAME}.{self.DB_TABLE_NAME} ( \
                     feed_name String, \
                     type String, \
                     value String, \
-                    collected Nullable(DateTime), \
-                    updated Nullable(DateTime) \
+                    collected DateTime, \
+                    updated DateTime \
                 ) \
                 ENGINE = Memory"
 
@@ -76,31 +62,30 @@ class ClickHouse:
         :param msg: Message object
         :return: None
         """
-        sql = "INSERT INTO indicators VALUES (%s, %s, %s)"
-
         async with ClientSession() as session:
             self.client = ChClient(
-                session,
-                url=f"http://{self.DB_ADDRESS}:{self.DB_PORT}",
-                database="intelligent_harvester",
+                session, url=f"http://{self.DB_ADDRESS}:{self.DB_PORT}"
             )
-            assert await self.client.is_alive()
+            if await self.client.is_alive():
+                await self.createDatabase(self.client)
+                await self.createTable(self.client)
 
-            await self.createDatabase(self.client, database_name=self.DB_NAME)
-            await self.createTable(
-                self.client, table_name=self.DB_NAME + "." + self.DB_TABLE_NAME
-            )
+                generator = [item for item in self.prepareObject(msg)]
+                values = ", ".join(map(str, generator))
 
-            generator = [item for item in self.prepareObject(msg)]
-            values = ", ".join(map(str, generator))
+                # print(f"\nVALUES: {values}")
+                print(f"\Inserted: {len(values)} objects")
 
-            # print(f"\nVALUES: {values}")
-
-            try:
-                await self.client.execute(f"INSERT INTO indicators VALUES {values}")
-            except ChClientError as e:
-                print(f"Error when insert the data: {e}")
-                logger.error(f"Error when insert the data: {e}")
+                try:
+                    await self.client.execute(
+                        f"INSERT INTO {self.DB_NAME}.{self.DB_TABLE_NAME} VALUES {values}"
+                    )
+                except ChClientError as e:
+                    print(f"Error when insert the data: {e}")
+                    logger.error(f"Error when insert the data: {e}")
+            else:
+                print(f"Clickhouse is not alive")
+                logger.error("Clickhouse is not alive")
 
     def prepareObject(self, msg: object) -> object:
         """
@@ -114,4 +99,4 @@ class ClickHouse:
                 yield tuple(item.values())
         else:
             logger.error(f"MQ msg is not a dict: {msg}")
-            raise TypeError("MQ msg is not a dict")
+            print(f"MQ msg is not a dict: \n {msg}")

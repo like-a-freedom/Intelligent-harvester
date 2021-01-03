@@ -38,7 +38,7 @@ class Normalizer:
                     normalized_ioc["feed_name"] = msg["feed_name"]
                     normalized_ioc["type"] = item["type"]
                     normalized_ioc["value"] = item["value"]
-                    normalized_ioc["collected"] = "NULL"
+                    normalized_ioc["collected"] = ""
                     normalized_ioc["updated"] = datetime.now().strftime(
                         "%Y-%m-%d %H:%M:%S"
                     )
@@ -49,7 +49,7 @@ class Normalizer:
                     normalized_ioc["collected"] = datetime.now().strftime(
                         "%Y-%m-%d %H:%M:%S"
                     )
-                    normalized_ioc["updated"] = "NULL"
+                    normalized_ioc["updated"] = ""
                     self.mem_db.set(hash, str(uuid.uuid4()))
 
                 normalized_msg.append(normalized_ioc.copy())
@@ -58,6 +58,7 @@ class Normalizer:
             # DEBUG ONLY BELOW
             # print(f"\nNORMALIZED MSG: {normalized_msg}")
             print(f"Normalized {ioc_count} IOCs per msg")
+            print(normalized_msg)
 
             logger.debug(f"Normalized {ioc_count} IOCs per msg")
             self.mem_db.dump()

@@ -1,13 +1,7 @@
 import asyncio
-import json
-import os
-from datetime import datetime, timedelta
 from time import time
 
-import aiodns
-import aiohttp
 import httpx
-import requests
 
 # Dirty fix to ignore HTTPS warnings
 import urllib3
@@ -16,12 +10,6 @@ import service
 import transport
 
 urllib3.disable_warnings()
-
-""" TODO:
-self.NATS_ADDRESS = os.getenv('NATS_ADDRESS') or settings["SYSTEM"]["NATS_ADDRESS"]
-self.NATS_PORT = os.getenv('NATS_PORTS') or settings["SYSTEM"]["NATS_PORT"]
-self.LOG_LEVEL = os.getenv('LOG_LEVEL') or config['SYSTEM']['LOG_LEVEL']
-"""
 
 logger = service.logEvent(__name__)
 config = service.loadConfig("config/settings.yml")
@@ -55,13 +43,13 @@ class Downloader:
                     feed_chunk["feed_data"] = chunk.decode()
 
                     # DEBUG ONLY BELOW
-                    print(feed_chunk)
+                    # print(feed_chunk)
                     # DEBUG END
 
                     feed_size += len(chunk)
                     total_chunks += 1
 
-                    await transport.sendMsgToMQ(feed_chunk)
+                    transport.sendMsgToMQ(feed_chunk)
 
                     if not chunk:
                         feed_download_time = time() - time_start
@@ -82,7 +70,6 @@ class Downloader:
         """
         data = [(self.getFeed(feed)) for feed in feeds]
         result = await asyncio.gather(*data, return_exceptions=True)
-        print(f"\n YOUR FEEDS: \n {result}")
 
     def getFeeds(self, feeds: dict):
         """

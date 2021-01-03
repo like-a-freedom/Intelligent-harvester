@@ -1,10 +1,6 @@
 import asyncio
 import json
-
-from nats.aio.client import Client as NATS
-from stan.aio.client import Client as STAN
-from nats.aio.errors import ErrConnectionClosed, ErrNoServers, ErrTimeout, NatsError
-
+from python_liftbridge import Lift, Message, Stream, ErrStreamExists
 import service
 
 logger = service.logEvent(__name__)
@@ -13,43 +9,45 @@ logger = service.logEvent(__name__)
 class MQ:
     def __init__(self):
         self.settings = service.loadConfig("config/settings.yml")
-        self.nats = NATS()
-        self.stan = STAN()
 
-        self.NATS_ADDRESS = str(self.settings["SYSTEM"]["NATS_ADDRESS"])
-        self.NATS_PORT = str(self.settings["SYSTEM"]["NATS_PORT"])
+        self.MQ_ADDRESS: str = str(
+            self.settings["SYSTEM"]["MQ_ADDRESS"]
+        )
+        self.MQ_PORT: str = str(self.settings["SYSTEM"]["MQ_PORT"])
+        self.SUBJECT: str = "harvester"
+        self.STREAM: str = "harvester-stream"
+
+        """ 
+        TODO:
+        self.MQ_ADDRESS = os.getenv('MQ_ADDRESS') or settings["SYSTEM"]["MQ_ADDRESS"]
+        self.MQ_PORT = os.getenv('MQ_PORT') or settings["SYSTEM"]["MQ_PORT"]
+        self.LOG_LEVEL = os.getenv('LOG_LEVEL') or config['SYSTEM']['LOG_LEVEL']
+        """
+
+        self.client = Lift(
+            ip_address=f"{self.MQ_ADDRESS}:{self.MQ_PORT}", timeout=5
+        )
+        if self.client:
+            print(
+                f"Connected to Liftbridge on {self.MQ_ADDRESS}:{self.MQ_PORT}\n"
+            )
+        try:
+            self.client.create_stream(Stream(subject=self.SUBJECT, name=self.STREAM))
+        except ErrStreamExists:
+            print("This stream already exists!")
 
         logger.info("Configuration loaded")
 
-    async def sendMsgToMQ(self, msg: dict):
+    def sendMsgToMQ(self, msg: dict):
         """
-        Send feed chunks to NATS MQ: https://github.com/nats-io/asyncio-nats-examples
-        :param feed: feed chunks
+        :param msg: feed chunks
         """
-        msg = json.dumps(msg).encode()
-
-        options = {
-            "servers": [f"nats://{self.NATS_ADDRESS}:{self.NATS_PORT}"],
-        }
-
-        # async def ack_handler(ack):
-        #   print(f"Received ack: {format(ack.guid)}")
+        msg = json.dumps(msg)
 
         try:
-            await self.nats.connect(**options)
-            await self.stan.connect("test-cluster", "harvester", nats=self.nats)
-            print(
-                f"Intelligent parser: connected to NATS at {self.nats.connected_url.netloc}..."
-            )
-            await self.stan.publish(
-                "harvester",
-                msg,
-                ack_handler=lambda ack: print(f"Msg sent, ack: {format(ack.guid)}"),
-            )
-        except NatsError as e:
-            logger.error(f"NATS error: {e}")
+            self.client.publish(Message(value=msg, stream=self.STREAM))
+            print(f"\nPublished to stream `harvester`: `{msg}` \n")
+        except Exception as e:
+            logger.error(e)
 
-        await asyncio.sleep(1)
-
-        await self.stan.close()
-        await self.nats.close()
+        # await asyncio.sleep(1)

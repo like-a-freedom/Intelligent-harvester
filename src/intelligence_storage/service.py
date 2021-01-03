@@ -27,7 +27,7 @@ def logEvent(moduleName: str, log_level=logging.INFO) -> object:
         return logger
 
 
-def loadConfig(configPath: str) -> object or None:
+def loadConfig(configPath: str) -> object:
     """
     Load configuration from file
     :param configPath: Custom path to configuration file
@@ -40,11 +40,10 @@ def loadConfig(configPath: str) -> object or None:
         try:
             with open(os.path.join(workdir, configPath), "r") as config_file:
                 config = yaml.safe_load(config_file)
+            return config
         except yaml.YAMLError as e:
-            logger.error("An error excepted while trying to read config: " + str(e))
+            logger.error(f"An error excepted while trying to read config: {str(e)}")
             exit()
     else:
         logger.error("Configuration file not found")
         exit()
-
-    return config

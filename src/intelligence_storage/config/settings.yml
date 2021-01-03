@@ -1,9 +1,9 @@
 SYSTEM:
-  NATS_ADDRESS: ti.rv.lab
-  NATS_PORT: 4223
+  MQ_ADDRESS: ti.rv.lab
+  MQ_PORT: 9292
 
 DB:
-  DB_ADDRESS: 192.168.20.70
+  DB_ADDRESS: ti.rv.lab
   DB_PORT: 8123
   DATABASE_NAME: intelligent_harvester
   TABLE_NAME: indicators

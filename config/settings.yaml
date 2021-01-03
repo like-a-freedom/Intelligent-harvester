@@ -80,7 +80,7 @@ COMMUNITY_FEEDS:
   cyberCureCsvFeed: http://api.cybercure.ai/feed/get_url?type=csv
   cyberCureHashFeed: http://api.cybercure.ai/feed/get_hash?type=csv
   cybercureBadIPs: http://api.cybercure.ai/feed/get_ips?type=csv
-  cybercrimeTracker: http://cybercrime-tracker.net/all.php    # confidence 40
+  cybercrimeTracker: http://cybercrime-tracker.net/all.php # confidence 40
 
   # Dataplane feeds
   datapladataplaneVncRFB: https://dataplane.org/vncrfb.txt
@@ -107,7 +107,7 @@ COMMUNITY_FEEDS:
   blocklistDeCourierPOP3: http://www.blocklist.de/lists/courierpop3.txt
   blocklistDeCourierIMAP: http://www.blocklist.de/lists/courierimap.txt
   blocklistDeAsterisk: http://www.blocklist.de/lists/asterisk.txt
-  blocklistDeApache: http://www.blocklist.de/lists/apache.txt   # confidence 60
+  blocklistDeApache: http://www.blocklist.de/lists/apache.txt # confidence 60
 
   # Firehol feeds
   fireholBitcoinNodes: https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/bitcoin_nodes_1d.ipset
@@ -156,29 +156,29 @@ COMMUNITY_FEEDS:
   mdlIpFeed: http://www.malwaredomainlist.com/hostslist/ip.txt
   mdlDomainFeed: http://www.malwaredomainlist.com/hostslist/hosts.txt
   tornodesFeed: https://check.torproject.org/exit-addresses
-  phishingReplyTo: http://svn.code.sf.net/p/aper/code/phishing_reply_addresses    # confidence 80
+  phishingReplyTo: http://svn.code.sf.net/p/aper/code/phishing_reply_addresses # confidence 80
   coinBlockerList: https://gitlab.com/ZeroDot1/CoinBlockerLists/raw/master/list.txt?inline=false
-  coinBlockerBrowserList: https://gitlab.com/ZeroDot1/CoinBlockerLists/raw/master/list_browser.txt?inline=false   # confidence 50
+  coinBlockerBrowserList: https://gitlab.com/ZeroDot1/CoinBlockerLists/raw/master/list_browser.txt?inline=false # confidence 50
   coinBlockerMiningServers: https://gitlab.com/ZeroDot1/CoinBlockerLists/raw/master/MiningServerIPList.txt?inline=false
   diamondFoxPanels: https://raw.githubusercontent.com/pan-unit42/iocs/master/diamondfox/diamondfox_panels.txt
-  booterblacklistOSINT: https://raw.githubusercontent.com/jjsantanna/booters_ecosystem_analysis/master/booterblacklist.csv    # confidence 50
-  charleysTheHayles: http://charles.the-haleys.org/ssh_dico_attack_hdeny_format.php/hostsdeny.txt   # confidence 0
+  booterblacklistOSINT: https://raw.githubusercontent.com/jjsantanna/booters_ecosystem_analysis/master/booterblacklist.csv # confidence 50
+  charleysTheHayles: http://charles.the-haleys.org/ssh_dico_attack_hdeny_format.php/hostsdeny.txt # confidence 0
   panwdblAppspot: https://panwdbl.appspot.com/lists/mdl.txt
   DdnsDomains: http://mirror1.malwaredomains.com/files/dynamic_dns.txt
   marcoramilIPs: https://malware.army/api/honey_iplist
-  greensnow: https://blocklist.greensnow.co/greensnow.txt   # confidence 60
+  greensnow: https://blocklist.greensnow.co/greensnow.txt # confidence 60
   vmxBadHosts: http://vmx.yourcmc.ru/BAD_HOSTS.IP4
   ransomwarePaymentSites: https://files.deependresearch.org/feeds/ransomware/ransomware-payment-sites.txt
   malwareDomainsDotCom: http://mirror1.malwaredomains.com/files/justdomains
-  malwareDomainsDotComImmortalDomains: http://mirror1.malwaredomains.com/files/immortal_domains.txt   # confidence 75
-  openPhish: https://openphish.com/feed.txt   # confidence 60
+  malwareDomainsDotComImmortalDomains: http://mirror1.malwaredomains.com/files/immortal_domains.txt # confidence 75
+  openPhish: https://openphish.com/feed.txt # confidence 60
   phishTank: http://data.phishtank.com/data/online-valid.csv
   sblamDotCom: https://sblam.com/blacklist.txt
   danUkAllTorNodes: https://www.dan.me.uk/torlist/
   danUkExitTorNodes: https://www.dan.me.uk/torlist/?exit
   vxVaultURLs: http://vxvault.net/URL_List.php
   ddnsProvidersList: http://dns-bh.sagadc.org/dynamic_dns.txt
-  cinscoreFeed: http://cinsscore.com/list/ci-badguys.txt  # confidence 70
+  cinscoreFeed: http://cinsscore.com/list/ci-badguys.txt # confidence 70
   POP3GropersFeed: https://home.nuug.no/~peter/pop3gropers.txt
   dshield: https://www.dshield.org/ipsascii.html
   dangerRulezSk: http://danger.rulez.sk/projects/bruteforceblocker/blist.php
@@ -193,25 +193,25 @@ COMMUNITY_FEEDS:
   targetedThreatOSINT: https://raw.githubusercontent.com/botherder/targetedthreats/master/samples.csv
   futpibGithubBL: https://raw.githubusercontent.com/futpib/policeman-rulesets/master/examples/simple_domains_blacklist.txt
   malwareEmailsGithub: https://raw.githubusercontent.com/WSTNPHX/scripts-n-tools/master/malware-email-addresses.txt
-  magnetoMalwareScanner: https://raw.githubusercontent.com/gwillem/magento-malware-scanner/master/rules/burner-domains.txt  # confidence 50
+  magnetoMalwareScanner: https://raw.githubusercontent.com/gwillem/magento-malware-scanner/master/rules/burner-domains.txt # confidence 50
   blutmagieTOR: https://torstatus.blutmagie.de/ip_list_all.php/Tor_ip_list_ALL.csv
   techhelplist: https://techhelplist.com/maltlqr/reports/dyreza.txt
   AbuseChSSLBL: https://sslbl.abuse.ch/blacklist/sslipblacklist.csv
   BBScanDNS: https://gist.githubusercontent.com/BBcan177/4a8bf37c131be4803cb2/raw
   BBScanIP: https://gist.githubusercontent.com/BBcan177/bf29d47ea04391cb3eb0/raw/
   darklistDe: http://www.darklist.de/raw.php
-  stDominicDropIpv4: https://threatintel.stdominics.sa.edu.au/droplist_high_confidence.txt    # confidence 60
+  stDominicDropIpv4: https://threatintel.stdominics.sa.edu.au/droplist_high_confidence.txt # confidence 60
   urlVirMalwareIP: http://www.urlvir.com/export-ip-addresses/
   urlVirMalwareDomains: http://www.urlvir.com/export-hosts/
   disconnectMesimpleMalwareList: https://s3.amazonaws.com/lists.disconnect.me/simple_malware.txt
   dnsNotrackingDomains: https://raw.githubusercontent.com/notracking/hosts-blocklists/master/domains.txt
   dnsNotrackingHostnames: https://raw.githubusercontent.com/notracking/hosts-blocklists/master/hostnames.txt
-  ApacheNoScript: https://www.badips.com/get/list/apache-noscript/3   # confidence 75
-  AntiSpamProxy: https://www.badips.com/get/list/assp/3   # confidence 50
-  badIpProxies: https://www.badips.com/get/list/proxy/3   # confidence 75
-  ApacheW00otW00t: https://www.badips.com/get/list/apache-w00tw00t/3    # confidence 50
-  ApachePhpMyAdmin: https://www.badips.com/get/list/apache-phpmyadmin/3   # confidence 50
-  
+  ApacheNoScript: https://www.badips.com/get/list/apache-noscript/3 # confidence 75
+  AntiSpamProxy: https://www.badips.com/get/list/assp/3 # confidence 50
+  badIpProxies: https://www.badips.com/get/list/proxy/3 # confidence 75
+  ApacheW00otW00t: https://www.badips.com/get/list/apache-w00tw00t/3 # confidence 50
+  ApachePhpMyAdmin: https://www.badips.com/get/list/apache-phpmyadmin/3 # confidence 50
+
   # Large feeds below
 
   otxReputationData: http://reputation.alienvault.com/reputation.data
@@ -225,8 +225,6 @@ COMMUNITY_FEEDS:
   # dragonResearchGroupSSHPWAUTH: https://dragonresearchgroup.org/insight/sshpwauth.txt
   # dragonResearchGroupVNCProbe: https://dragonresearchgroup.org/insight/vncprobe.txt
   # SANSDailySources: https://isc.sans.edu/feeds/daily_sources
-
-
   # TODO: add from https://osint.digitalside.it
   # TODO: add from https://www.bountysource.com/issues/27821354-contribute-feeds-list
   # TODO: add from https://github.com/certtools/intelmq/issues/384
@@ -237,20 +235,20 @@ COMMUNITY_FEEDS:
   # TODO: SpamHausDropIp: http://www.spamhaus.org/drop/drop.txt   # confidence 80
   # TODO: Extended SpamHaus Drop list: http://www.spamhaus.org/drop/edrop.txt   # confidence 70
   # TODO: NIXSPAMDB: http://www.dnsbl.manitu.net/download/nixspam-ip.dump.gz  # confidence 75
-  # TODO: Maltrail: (a number of sources inside each repository) 
+  # TODO: Maltrail: (a number of sources inside each repository)
   # TODO: http://www.darklist.de/raw.php    # confidence 70
   # TODO: https://isc.sans.edu/api/threatlist/miner/ #  XML, confidence 70
+  # TODO: https://jamesbrine.com.au/STIX/
   #  https://github.com/stamparm/maltrail/tree/master/trails/static/suspicious
   #  https://github.com/stamparm/maltrail/tree/master/trails/static/malware
   #  http://www.wildlist.org/CurrentList.txt
-  #  
+  #
   # Pan42 IOCS
   #  https://github.com/pan-unit42/iocs
   # Fireeye IOCS
   #  https://github.com/fireeye/iocs
   # Eset malware IOCS
   #  https://github.com/eset/malware-ioc
-
   # Aggregators
   #  https://threatfeeds.io
   # Antisource compilation:
@@ -259,7 +257,6 @@ COMMUNITY_FEEDS:
   #  https://www.antisource.com/intel/antisource_ipblacklist.txt
   #  https://www.antisource.com/intel/antisource_domainslist.txt
   #  https://www.antisource.com/intel/antisource_combinedlist.txt.gz
-
   # Reports:
   #  http://cybercampaigns.net
   #  https://github.com/CyberMonitor/APT_CyberCriminal_Campagin_Collections
@@ -269,11 +266,10 @@ COMMUNITY_FEEDS:
   #  https://www.circl.lu/doc/misp/feed-osint/
   #  https://feeds.inthreat.com/osint/
 
-
 VENDOR_FEEDS:
   OTX:
-    #OTX_URL:
-    #OTX_API_KEY:
+  #OTX_URL:
+  #OTX_API_KEY:
   XFORCE:
     #XFORCE_URL:
     #XFORCE_API:
