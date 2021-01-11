@@ -240,6 +240,7 @@ COMMUNITY_FEEDS:
   # TODO: https://isc.sans.edu/api/threatlist/miner/ #  XML, confidence 70
   # TODO: https://jamesbrine.com.au/STIX/
   # TODO: https://labs.inquest.net/api/iocdb/list
+  # TODO: https://threatview.io/Downloads/
   #  https://github.com/stamparm/maltrail/tree/master/trails/static/suspicious
   #  https://github.com/stamparm/maltrail/tree/master/trails/static/malware
   #  http://www.wildlist.org/CurrentList.txt
