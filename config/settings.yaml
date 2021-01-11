@@ -239,6 +239,7 @@ COMMUNITY_FEEDS:
   # TODO: http://www.darklist.de/raw.php    # confidence 70
   # TODO: https://isc.sans.edu/api/threatlist/miner/ #  XML, confidence 70
   # TODO: https://jamesbrine.com.au/STIX/
+  # TODO: https://labs.inquest.net/api/iocdb/list
   #  https://github.com/stamparm/maltrail/tree/master/trails/static/suspicious
   #  https://github.com/stamparm/maltrail/tree/master/trails/static/malware
   #  http://www.wildlist.org/CurrentList.txt
