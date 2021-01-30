@@ -18,11 +18,6 @@ COMMUNITY_FEEDS:
   SANSLowSuspiciousDomains: https://isc.sans.edu/feeds/suspiciousdomains_Low.txt
   SANSTorExitNodes: https://isc.sans.edu/feeds/topips.txt
 
-  # Zeus tracker
-  zeustrackerAbuseChDomainsBL: https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist
-  zeustrackerAbuseChIpBL: https://zeustracker.abuse.ch/blocklist.php?download=ipblocklist
-  zeustrackerAbuseCompromisedURLs: https://zeustracker.abuse.ch/blocklist.php?download=compromised
-
   # Emerging threats
   emergingThreatsBL: https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt
   emergingThreatsCompromisedIPs: https://rules.emergingthreats.net/blockrules/compromised-ips.txt
