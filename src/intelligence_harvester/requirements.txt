@@ -1,0 +1,6 @@
+httpx==0.15.4
+python_liftbridge==0.0.7
+urllib3==1.25.10
+OTXv2==1.5.10
+pymisp==2.4.137.1
+PyYAML==5.4.1
