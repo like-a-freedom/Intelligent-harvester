@@ -18,23 +18,6 @@ COMMUNITY_FEEDS:
   SANSLowSuspiciousDomains: https://isc.sans.edu/feeds/suspiciousdomains_Low.txt
   SANSTorExitNodes: https://isc.sans.edu/feeds/topips.txt
 
-  # Ramsomware tracker (Abuse Ch), confidence 50
-  ransomwaretrackerAbuseChFeed: https://ransomwaretracker.abuse.ch/feeds/csv/
-  ransomwaretrackerAbuseChUrlBL: https://ransomwaretracker.abuse.ch/downloads/RW_URLBL.txt
-  ransomwaretrackerAbuseChIpBL: https://ransomwaretracker.abuse.ch/downloads/RW_IPBL.txt
-  ransomwaretrackerAbuseChDomainsBL: https://ransomwaretracker.abuse.ch/downloads/RW_DOMBL.txt
-  ransomwaretrackerAbuseChUrlLockyBL: https://ransomwaretracker.abuse.ch/downloads/LY_DS_URLBL.txt
-  ransomwaretrackerAbuseChUrlTeslaCryptBL: https://ransomwaretracker.abuse.ch/downloads/TC_C2_URLBL.txt
-  ransomwaretrackerAbuseChUrlTeslaCryptDistributionList: https://ransomwaretracker.abuse.ch/downloads/TC_DS_URLBL.txt
-  ransomwaretrackerAbuseChUrlPaymentSitesBL: https://ransomwaretracker.abuse.ch/downloads/LY_PS_IPBL.txt
-  ransomwaretrackerAbuseChTorrentLockerPaymentSites: https://ransomwaretracker.abuse.ch/downloads/TL_PS_DOMBL.txt
-  ransomwaretrackerAbuseChTorrentLockerRansomware: https://ransomwaretracker.abuse.ch/downloads/TL_C2_DOMBL.txt
-  ransomwaretrackerAbuseChTeslaCrypsPaymentSitesDOMBL: https://ransomwaretracker.abuse.ch/downloads/TC_PS_DOMBL.txt
-  ransomwaretrackerAbuseChCryptoWallURLBL: https://ransomwaretracker.abuse.ch/downloads/CW_C2_URLBL.txt
-  ransomwaretrackerAbuseChCryptoWallPaymentSites: https://ransomwaretracker.abuse.ch/downloads/CW_PS_DOMBL.txt
-  ransomwaretrackerAbuseChLockyRansomwarePaymentSitesDOMBL: https://ransomwaretracker.abuse.ch/downloads/LY_PS_DOMBL.txt
-  ransomwaretrackerAbuseChLockyRansomwareDOMBL: https://ransomwaretracker.abuse.ch/downloads/LY_C2_DOMBL.txt
-
   # Zeus tracker
   zeustrackerAbuseChDomainsBL: https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist
   zeustrackerAbuseChIpBL: https://zeustracker.abuse.ch/blocklist.php?download=ipblocklist
