@@ -3,16 +3,14 @@ import json
 from python_liftbridge import Lift, Message, Stream, ErrStreamExists
 import service
 
-logger = service.logEvent(__name__)
+logger = service.log_event(__name__)
 
 
 class MQ:
     def __init__(self):
-        self.settings = service.loadConfig("config/settings.yml")
+        self.settings = service.load_config("config/settings.yml")
 
-        self.MQ_ADDRESS: str = str(
-            self.settings["SYSTEM"]["MQ_ADDRESS"]
-        )
+        self.MQ_ADDRESS: str = str(self.settings["SYSTEM"]["MQ_ADDRESS"])
         self.MQ_PORT: str = str(self.settings["SYSTEM"]["MQ_PORT"])
         self.SUBJECT: str = "harvester"
         self.STREAM: str = "harvester-stream"
@@ -24,13 +22,9 @@ class MQ:
         self.LOG_LEVEL = os.getenv('LOG_LEVEL') or config['SYSTEM']['LOG_LEVEL']
         """
 
-        self.client = Lift(
-            ip_address=f"{self.MQ_ADDRESS}:{self.MQ_PORT}", timeout=5
-        )
+        self.client = Lift(ip_address=f"{self.MQ_ADDRESS}:{self.MQ_PORT}", timeout=5)
         if self.client:
-            print(
-                f"Connected to Liftbridge on {self.MQ_ADDRESS}:{self.MQ_PORT}\n"
-            )
+            print(f"Connected to Liftbridge on {self.MQ_ADDRESS}:{self.MQ_PORT}\n")
         try:
             self.client.create_stream(Stream(subject=self.SUBJECT, name=self.STREAM))
         except ErrStreamExists:
@@ -38,15 +32,15 @@ class MQ:
 
         logger.info("Configuration loaded")
 
-    def sendMsgToMQ(self, msg: dict):
+    def send_msg_to_mq(self, msg: dict):
         """
         :param msg: feed chunks
         """
-        msg = json.dumps(msg)
+        message = json.dumps(msg)
 
         try:
             self.client.publish(Message(value=msg, stream=self.STREAM))
-            print(f"\nPublished to stream `harvester`: `{msg}` \n")
+            print(f"\nPublished to stream `harvester`: `{message}` \n")
         except Exception as e:
             logger.error(e)
 

@@ -11,8 +11,8 @@ import transport
 
 urllib3.disable_warnings()
 
-logger = service.logEvent(__name__)
-config = service.loadConfig("config/settings.yml")
+logger = service.log_event(__name__)
+config = service.load_config("config/settings.yml")
 transport = transport.MQ()
 
 FEED_CHUNK_SIZE = 1048576
@@ -20,12 +20,12 @@ LIST_CHUNK_SIZE = 1000
 
 
 class Downloader:
-    async def getFeed(self, feed: dict):
+    async def get_feed(self, feed: dict):
         """
         Download the feed specified. Just get the feed of its own format without any parsing
         :param session: aiohttp ClientSession
         :param feed: Feed object
-        :return: Feed object 
+        :return: Feed object
         """
         total_chunks: int = 0
         feed_size: int = 0
@@ -49,7 +49,7 @@ class Downloader:
                     feed_size += len(chunk)
                     total_chunks += 1
 
-                    transport.sendMsgToMQ(feed_chunk)
+                    transport.send_msg_to_mq(feed_chunk)
 
                     if not chunk:
                         feed_download_time = time() - time_start
@@ -62,16 +62,16 @@ class Downloader:
                     f"Feed `{feed['feed_name']}` can not be downloaded: {response.status}"
                 )
 
-    async def getAllOsintFeeds(self, feeds: dict):
+    async def get_all_osint_feeds(self, feeds: dict):
         """
         Downloads all opensource feeds from
         configuration file and send it to MQ
         :param feeds: Feeds object
         """
-        data = [(self.getFeed(feed)) for feed in feeds]
+        data = [(self.get_feed(feed)) for feed in feeds]
         result = await asyncio.gather(*data, return_exceptions=True)
 
-    def getFeeds(self, feeds: dict):
+    def get_feeds(self, feeds: dict):
         """
         Get all feeds specified in configuration file in async mode
         :param feeds: Feeds object
@@ -79,13 +79,13 @@ class Downloader:
         time_start = time()
 
         try:
-            asyncio.run(self.getAllOsintFeeds(feeds))
+            asyncio.run(self.get_all_osint_feeds(feeds))
         finally:
             logger.info(
                 f"Successfully downloaded and sent to MQ {len(feeds)} feeds in {(time() - time_start):.2f} seconds"
             )
 
-    def makeChunks(self, list: list, size: int = LIST_CHUNK_SIZE) -> object:
+    def make_chunks(self, list: list, size: int = LIST_CHUNK_SIZE) -> object:
         """Yield successive n-sized chunks from lst."""
         for i in range(0, len(list), size):
             yield list[i : i + size]

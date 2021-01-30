@@ -1,18 +1,17 @@
 import service
 import worker
 
-logger = service.logEvent(__name__)
+logger = service.log_event(__name__)
 worker = worker.Downloader()
 
 
-def loadConfig():
-    return service.loadConfig("config/feeds.yml")
+def load_config():
+    return service.load_config("config/feeds.yml")
 
 
-def loadFeeds() -> list:
-    feeds = loadConfig()
-    # Serve the feed object
-    feedPack: list = []
+def load_feeds() -> list:
+    feeds = load_config()
+    feed_pack: list = []
     feed: dict = {}
 
     for item in feeds["COMMUNITY_FEEDS"].items():
@@ -22,14 +21,14 @@ def loadFeeds() -> list:
                 feed["feed_url"] = property["url"]
             elif "type" in property:
                 feed["feed_type"] = property["type"]
-        feedPack.append(feed.copy())
+        feed_pack.append(feed.copy())
     logger.info(
-        f"Intelligent harvester configuration loaded: got {len(feedPack)} feeds from config"
+        f"Intelligent harvester configuration loaded: got {len(feed_pack)} feeds from config"
     )
-    return feedPack
+    return feed_pack
 
 
 if __name__ == "__main__":
     # Start the worker and get all feeds
     logger.info("\nIntelligent harvester started: it's time to grab some feeds")
-    worker.getFeeds(loadFeeds())
+    worker.get_feeds(load_feeds())

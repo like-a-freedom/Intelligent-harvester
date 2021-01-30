@@ -1,33 +1,32 @@
 from OTXv2 import OTXv2
 from collections import defaultdict
+from datetime import datetime, timedelta
 
 
-def getOtxFeed(self, days: int, apiKey: str) -> dict:
+def get_otx_feed(self, days: int, api_key: str) -> dict:
     """
-            Receive the IoCs from Alienvault OTX
-            :param days: How many days the reslts from the feed can be
-            :return: List of IP addresses and domains from the specific feed
-            """
+    Receive the IoCs from Alienvault OTX
+    :param days: How many days the reslts from the feed can be
+    :return: List of IP addresses and domains from the specific feed
+    """
 
-    otx = OTXv2(apiKey)
+    otx = OTXv2(api_key)
 
     try:
-        Logger.logEvent().info("OTX integration started")
-        startTime = datetime.now()
+        logger.log_event().info("OTX integration started")
+        start_time = datetime.now()
         pulses = otx.getsince((datetime.now() - timedelta(days=days)).isoformat())
         # pulses = otx.getall()
         otx.get
-        execTime = datetime.now() - startTime
+        exec_time = datetime.now() - start_time
         print(
-            "OTX feed download complete in {0}: {1} events received".format(
-                execTime, len(pulses)
-            )
+            f"OTX feed download complete in {exec_time}: {len(pulses)} events received"
         )
-        Logger.logEvent().info(
-            "OTX feed download complete: %s events received" % len(pulses)
+        logger.logEvent().info(
+            f"OTX feed download complete: {len(pulses)} events received"
         )
-    except Exception as otxDownloadFailedError:
-        Logger.logEvent().error("OTX feed download failed: " % otxDownloadFailedError)
+    except Exception as e:
+        logger.logEvent().error(f"OTX feed download failed: {e}")
 
     mappings = {
         "hostname": "hostname",
@@ -40,13 +39,12 @@ def getOtxFeed(self, days: int, apiKey: str) -> dict:
         "YARA": "yara",
     }
 
-    otxDict = defaultdict(list)
+    otx_dict = defaultdict(list)
 
     for index, feeds in enumerate(pulses):
         for pulse in pulses[index]["indicators"]:
             type = pulse["type"]
             if type in mappings:
-                otxDict[mappings[type]].append(pulse["indicator"])
+                otx_dict[mappings[type]].append(pulse["indicator"])
 
-    return otxDict
-
+    return otx_dict

@@ -6,11 +6,11 @@ from time import time
 
 import service
 
-logger = service.logEvent(__name__)
+logger = service.log_event(__name__)
 
 
 class FeedParser:
-    def __preprocessFeed(self, feed: dict) -> dict:
+    def __preprocess_feed(self, feed: dict) -> dict:
         """
         Preprocess feeds: remove comments, delimiters
         :param feed: feed object
@@ -41,33 +41,33 @@ class FeedParser:
 
         return feed
 
-    async def parseFeed(self, feed: str) -> dict:
+    async def parse_feed(self, feed: str) -> dict:
         """
         Parse feed data
         :param feed: Threat intelligence feed chunk
         """
         time_start = time()
-        feed = self.__preprocessFeed(feed)
+        feed = self.__preprocess_feed(feed)
 
         # print("\nCHUNK:\n\n", feed)
 
         # TODO: try to use https://github.com/InQuest/python-iocextract instead of own method
 
         ### Setup patterns for extraction
-        url_pattern = self.Utils.guessIocType(self, "URL")
-        ipv4_pattern = self.Utils.guessIocType(self, "ipv4")
-        ipv6_pattern = self.Utils.guessIocType(self, "ipv6")
-        domain_pattern = self.Utils.guessIocType(self, "domain")
-        email_pattern = self.Utils.guessIocType(self, "email")
-        regkey_pattern = self.Utils.guessIocType(self, "regkey")
-        md5_pattern = self.Utils.guessIocType(self, "md5")
-        sha1_pattern = self.Utils.guessIocType(self, "sha1")
-        sha256_pattern = self.Utils.guessIocType(self, "sha256")
-        sha512_pattern = self.Utils.guessIocType(self, "sha512")
-        filename_pattern = self.Utils.guessIocType(self, "filename")
-        filepath_pattern = self.Utils.guessIocType(self, "filepath")
-        cve_pattern = self.Utils.guessIocType(self, "cve")
-        yara_pattern = self.Utils.guessIocType(self, "yara")
+        url_pattern = self.Utils.guess_ioc_type(self, "URL")
+        ipv4_pattern = self.Utils.guess_ioc_type(self, "ipv4")
+        ipv6_pattern = self.Utils.guess_ioc_type(self, "ipv6")
+        domain_pattern = self.Utils.guess_ioc_type(self, "domain")
+        email_pattern = self.Utils.guess_ioc_type(self, "email")
+        regkey_pattern = self.Utils.guess_ioc_type(self, "regkey")
+        md5_pattern = self.Utils.guess_ioc_type(self, "md5")
+        sha1_pattern = self.Utils.guess_ioc_type(self, "sha1")
+        sha256_pattern = self.Utils.guess_ioc_type(self, "sha256")
+        sha512_pattern = self.Utils.guess_ioc_type(self, "sha512")
+        filename_pattern = self.Utils.guess_ioc_type(self, "filename")
+        filepath_pattern = self.Utils.guess_ioc_type(self, "filepath")
+        cve_pattern = self.Utils.guess_ioc_type(self, "cve")
+        yara_pattern = self.Utils.guess_ioc_type(self, "yara")
 
         ### Declare temp list vars to store IOCs
         # url_list: list = []
@@ -177,7 +177,7 @@ class FeedParser:
 
         return feed
 
-    def batchFeedParse(self, feed: str, parallel_proc: int) -> dict:
+    def batch_feed_parse(self, feed: str, parallel_proc: int) -> dict:
         """
         Batch feed parse
         :param feedsPack: Feed data
@@ -199,7 +199,7 @@ class FeedParser:
         else:
             parsed_data = pool.map(self.__parseFeed, feed_pack)
         """
-        parsed_data.append(self.parseFeed(feed))
+        parsed_data.append(self.parse_feed(feed))
 
         total_time = round(time() - time_start, 1)
 
@@ -220,7 +220,7 @@ class FeedParser:
         return parsed_data
 
     class Utils:
-        def parseIPv4(
+        def parse_ipv4w(
             self, indicator: str
         ) -> str:  # TODO: remove this method as obsolete
             """
@@ -232,7 +232,7 @@ class FeedParser:
             ip = re.findall(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", indicator)
             return ip
 
-        def guessIocType(self, ioc_type: str) -> str:
+        def guess_ioc_type(self, ioc_type: str) -> str:
             """
             Collection of regex that use to parse
             indicators of compomise from
@@ -267,7 +267,7 @@ class FeedParser:
                 logger.info(
                     "Error while parsing iocs from feed: invalid type specified"
                 )
-                print("[!] Fn `guessIocType`: Invalid type specified")
+                print("[!] Fn `guess_ioc_type`: Invalid type specified")
                 # os.sys.exit(0)
 
             return pattern
