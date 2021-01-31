@@ -20,7 +20,7 @@ def get_all_misp_attributes(self, misps: list, procs: int, iocs_only: bool = Fal
         pool = ProcessPool(procs)
         with ProcessPool(processes=procs) as pool:
             # TODO: support `iocsOnly argument`
-            mispData = pool.map(integration.get_misp_attributes, misps)
+            misp_data = pool.map(integration.get_misp_attributes, misps)
             pool.close()
             pool.join()
 
