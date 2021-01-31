@@ -7,12 +7,12 @@ def __init__() -> None:
     pass
 
 
-def log_event(moduleName: str, log_level=logging.INFO) -> object:
+def log_event(module_name: str, log_level=logging.INFO) -> object:
     """
     Write meesages into log file
     """
     logger = logging.getLogger(
-        moduleName
+        module_name
     )  # another approach is to use `logger.propagate = False`
     if not len(logger.handlers):
         handler = logging.FileHandler("harvester.log")
