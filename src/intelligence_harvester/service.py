@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 import yaml
 import logging
 
@@ -27,7 +28,7 @@ def log_event(module_name: str, log_level=logging.INFO) -> object:
         return logger
 
 
-def load_config(config_path: str) -> object or None:
+def load_config(config_path: str) -> Optional[dict]:
     """
     Load configuration from file
     :param config_path: Custom path to configuration file

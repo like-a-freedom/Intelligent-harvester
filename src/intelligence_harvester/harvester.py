@@ -1,5 +1,5 @@
-import service
-import worker
+from . import worker
+from . import service
 
 logger = service.log_event(__name__)
 worker = worker.Downloader()

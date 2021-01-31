@@ -1,7 +1,6 @@
-import asyncio
 import json
-from python_liftbridge import Lift, Message, Stream, ErrStreamExists
-import service
+from python_liftbridge import ErrStreamExists, Lift, Message, Stream
+from . import service
 
 logger = service.log_event(__name__)
 
@@ -28,7 +27,7 @@ class MQ:
         try:
             self.client.create_stream(Stream(subject=self.SUBJECT, name=self.STREAM))
         except ErrStreamExists:
-            print("This stream already exists!")
+            raise Exception(f"Stream {self.STREAM} already exists!")
 
         logger.info("Configuration loaded")
 
@@ -40,7 +39,7 @@ class MQ:
 
         try:
             self.client.publish(Message(value=msg, stream=self.STREAM))
-            print(f"\nPublished to stream `harvester`: `{message}` \n")
+            print(f"\nPublished to stream `{self.STREAM}`: `{message}` \n")
         except Exception as e:
             logger.error(e)
 
