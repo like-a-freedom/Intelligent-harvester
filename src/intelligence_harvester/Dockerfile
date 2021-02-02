@@ -13,7 +13,8 @@ RUN ln -sf /dev/stdout /opt/harvester/harvester.log \
 
 # VOLUME [ "./config" ]
 
-#ENV
+ENV MQ_ADDRESS=ti.rv.lab
+ENV MQ_PORT=9292
 
 WORKDIR /opt/napominator
-CMD ["..."]
+CMD ["python", "harvester.py"]

@@ -1,16 +1,15 @@
+import os
 import json
+import service
 from python_liftbridge import ErrStreamExists, Lift, Message, Stream
-from . import service
 
 logger = service.log_event(__name__)
 
 
 class MQ:
     def __init__(self):
-        self.settings = service.load_config("config/settings.yml")
-
-        self.MQ_ADDRESS: str = str(self.settings["SYSTEM"]["MQ_ADDRESS"])
-        self.MQ_PORT: str = str(self.settings["SYSTEM"]["MQ_PORT"])
+        self.MQ_ADDRESS: str = os.environ["MQ_ADDRESS"]
+        self.MQ_PORT: str = os.environ["MQ_PORT"]
         self.SUBJECT: str = "harvester"
         self.STREAM: str = "harvester-stream"
 
@@ -31,7 +30,7 @@ class MQ:
 
         logger.info("Configuration loaded")
 
-    def send_msg_to_mq(self, msg: dict):
+    def send_msg_to_mq(self, msg: dict) -> None:
         """
         :param msg: feed chunks
         """

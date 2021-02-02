@@ -1,11 +1,14 @@
-from . import worker
-from . import service
+import time
+import worker
+import service
+import schedule
+from typing import Optional
 
 logger = service.log_event(__name__)
 worker = worker.Downloader()
 
 
-def load_config():
+def load_config() -> Optional[dict]:
     return service.load_config("config/feeds.yml")
 
 
@@ -31,4 +34,9 @@ def load_feeds() -> list:
 if __name__ == "__main__":
     # Start the worker and get all feeds
     logger.info("\nIntelligent harvester started: it's time to grab some feeds")
-    worker.get_feeds(load_feeds())
+    schedule.every(5).minutes.do(worker.get_feeds(load_feeds()))
+
+    while True:
+        # run_pending
+        schedule.run_pending()
+        time.sleep(1)

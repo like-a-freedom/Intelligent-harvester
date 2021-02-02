@@ -1,5 +1,6 @@
 import asyncio
 from time import time
+from typing import Generator
 
 import httpx
 
@@ -20,7 +21,7 @@ LIST_CHUNK_SIZE = 1000
 
 
 class Downloader:
-    async def get_feed(self, feed: dict):
+    async def get_feed(self, feed: dict) -> None:
         """
         Download the feed specified. Just get the feed of its own format without any parsing
         :param session: aiohttp ClientSession
@@ -49,6 +50,7 @@ class Downloader:
                     feed_size += len(chunk)
                     total_chunks += 1
 
+                    print(feed_chunk)
                     transport.send_msg_to_mq(feed_chunk)
 
                     if not chunk:
@@ -59,10 +61,10 @@ class Downloader:
                         )
             else:
                 logger.error(
-                    f"Feed `{feed['feed_name']}` can not be downloaded: {response.status}"
+                    f"Feed `{feed['feed_name']}` can not be downloaded: {response.status_code}"
                 )
 
-    async def get_all_osint_feeds(self, feeds: dict):
+    async def get_all_osint_feeds(self, feeds: dict) -> None:
         """
         Downloads all opensource feeds from
         configuration file and send it to MQ
@@ -71,7 +73,7 @@ class Downloader:
         data = [(self.get_feed(feed)) for feed in feeds]
         result = await asyncio.gather(*data, return_exceptions=True)
 
-    def get_feeds(self, feeds: dict):
+    def get_feeds(self, feeds: dict) -> None:
         """
         Get all feeds specified in configuration file in async mode
         :param feeds: Feeds object
@@ -85,7 +87,7 @@ class Downloader:
                 f"Successfully downloaded and sent to MQ {len(feeds)} feeds in {(time() - time_start):.2f} seconds"
             )
 
-    def make_chunks(self, list: list, size: int = LIST_CHUNK_SIZE) -> object:
+    def make_chunks(self, list: list, size: int = LIST_CHUNK_SIZE) -> Generator:
         """Yield successive n-sized chunks from lst."""
         for i in range(0, len(list), size):
             yield list[i : i + size]

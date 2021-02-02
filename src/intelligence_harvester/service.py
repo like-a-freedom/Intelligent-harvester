@@ -8,7 +8,7 @@ def __init__() -> None:
     pass
 
 
-def log_event(module_name: str, log_level=logging.INFO) -> object:
+def log_event(module_name: str, log_level=logging.INFO) -> Optional[logging.Logger]:
     """
     Write meesages into log file
     """
@@ -41,11 +41,10 @@ def load_config(config_path: str) -> Optional[dict]:
         try:
             with open(os.path.join(workdir, config_path), "r") as config_file:
                 config = yaml.safe_load(config_file)
+            return config
         except yaml.YAMLError as e:
             logger.error(f"An error excepted while trying to read config: {e}")
             exit()
     else:
         logger.error("Configuration file not found")
         exit()
-
-    return config
