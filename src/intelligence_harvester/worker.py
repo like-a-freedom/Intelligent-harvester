@@ -1,6 +1,6 @@
 import asyncio
 from time import time
-from typing import Generator
+from typing import Any, Dict, Generator
 
 import httpx
 
@@ -21,7 +21,7 @@ LIST_CHUNK_SIZE = 1000
 
 
 class Downloader:
-    async def get_feed(self, feed: dict) -> None:
+    async def get_feed(self, feed: Dict[str, Any]) -> None:
         """
         Download the feed specified. Just get the feed of its own format without any parsing
         :param session: aiohttp ClientSession
@@ -37,7 +37,7 @@ class Downloader:
             "GET", feed["feed_url"], allow_redirects=True
         ) as response:
             if response.status_code == 200:
-                feed_chunk: dict = {}
+                feed_chunk: Dict[str, Any] = {}
                 async for chunk in response.aiter_bytes():
                     feed_chunk["feed_name"] = feed["feed_name"]
                     feed_chunk["feed_type"] = feed["feed_type"]
@@ -64,7 +64,7 @@ class Downloader:
                     f"Feed `{feed['feed_name']}` can not be downloaded: {response.status_code}"
                 )
 
-    async def get_all_osint_feeds(self, feeds: dict) -> None:
+    async def get_all_osint_feeds(self, feeds: Dict[str, Any]) -> None:
         """
         Downloads all opensource feeds from
         configuration file and send it to MQ
@@ -73,7 +73,7 @@ class Downloader:
         data = [(self.get_feed(feed)) for feed in feeds]
         result = await asyncio.gather(*data, return_exceptions=True)
 
-    def get_feeds(self, feeds: dict) -> None:
+    def get_feeds(self, feeds: Dict[str, Any]) -> None:
         """
         Get all feeds specified in configuration file in async mode
         :param feeds: Feeds object
@@ -87,7 +87,7 @@ class Downloader:
                 f"Successfully downloaded and sent to MQ {len(feeds)} feeds in {(time() - time_start):.2f} seconds"
             )
 
-    def make_chunks(self, list: list, size: int = LIST_CHUNK_SIZE) -> Generator:
+    def make_chunks(self, list, size: int = LIST_CHUNK_SIZE) -> Generator:
         """Yield successive n-sized chunks from lst."""
         for i in range(0, len(list), size):
             yield list[i : i + size]

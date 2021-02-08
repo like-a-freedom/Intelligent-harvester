@@ -1,5 +1,6 @@
 import os
 import json
+from typing import Any, Dict
 import service
 from python_liftbridge import ErrStreamExists, Lift, Message, Stream
 
@@ -30,7 +31,7 @@ class MQ:
 
         logger.info("Configuration loaded")
 
-    def send_msg_to_mq(self, msg: dict) -> None:
+    def send_msg_to_mq(self, msg: Dict[str, Any]) -> None:
         """
         :param msg: feed chunks
         """

@@ -2,20 +2,20 @@ import time
 import worker
 import service
 import schedule
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 logger = service.log_event(__name__)
 worker = worker.Downloader()
 
 
-def load_config() -> Optional[dict]:
+def load_config() -> Optional[Dict[str, Any]]:
     return service.load_config("config/feeds.yml")
 
 
-def load_feeds() -> list:
+def load_feeds() -> List[Dict[str, Any]]:
     feeds = load_config()
-    feed_pack: list = []
-    feed: dict = {}
+    feed_pack: List = []
+    feed: Dict[str, Any] = {}
 
     for item in feeds["COMMUNITY_FEEDS"].items():
         feed["feed_name"] = item[0]
