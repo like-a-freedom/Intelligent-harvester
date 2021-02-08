@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 # Other stuff
+.coverage
 .gitignore
 stuff
 iocs.json
